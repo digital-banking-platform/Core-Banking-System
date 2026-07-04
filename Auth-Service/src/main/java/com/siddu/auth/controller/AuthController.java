@@ -1,0 +1,59 @@
+package com.siddu.auth.controller;
+
+import com.siddu.auth.dto.Requests.LoginRequest;
+import com.siddu.auth.dto.Requests.RegisterRequest;
+import com.siddu.auth.dto.Response.LogoutResponse;
+import com.siddu.auth.dto.Response.UserResponse;
+import com.siddu.auth.dto.Response.AuthResult;
+import com.siddu.auth.security.JwtService;
+import com.siddu.auth.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import com.siddu.auth.util.CookieUtil;
+import java.util.UUID;
+
+@RestController
+public class AuthController {
+    private final AuthService authService;
+    private final CookieUtil cookieutil;
+    private final JwtService jwtService;
+
+    public AuthController(AuthService authService, CookieUtil cookieutil, JwtService jwtService) {
+        this.authService = authService;
+        this.cookieutil=cookieutil;
+        this.jwtService = jwtService;
+    }
+    @PostMapping("/Auth/register")
+    public ResponseEntity<UserResponse> RegisterUser(@Valid @RequestBody RegisterRequest registerRequest,
+                                                     HttpServletResponse response, HttpServletRequest request) {
+        String deviceInfo=request.getHeader("User-Agent");
+        String ipAddress=request.getRemoteAddr();
+        AuthResult authresult=authService.registerUser(registerRequest,deviceInfo,ipAddress);
+        cookieutil.addAccessToken(response,authresult.getToken());
+        cookieutil.addRefreshToken(response,authresult.getRefreshToken());
+        return ResponseEntity.ok(authresult.getUserResponse());
+
+    }
+
+    @GetMapping("/Auth/login")
+    public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest loginRequest,
+                                              HttpServletResponse response, HttpServletRequest request) {
+        String deviceInfo=request.getHeader("User-Agent");
+        String ipAddress=request.getRemoteAddr();
+        AuthResult authResult=authService.loginUser(loginRequest,deviceInfo,ipAddress);
+        cookieutil.addAccessToken(response,authResult.getToken());
+        cookieutil.addRefreshToken(response,authResult.getRefreshToken());
+        return ResponseEntity.ok(authResult.getUserResponse());
+    }
+
+    @GetMapping("Auth/logout")
+    public ResponseEntity<LogoutResponse> logout(@RequestHeader("Authorization") String authheader) {
+        String token=authheader.substring(7);
+        UUID  userid=jwtService.extractUserId(token);
+        return ResponseEntity.ok(authService.logoutUser(userid));
+
+    }
+}

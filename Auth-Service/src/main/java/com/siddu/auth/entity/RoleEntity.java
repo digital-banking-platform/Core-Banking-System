@@ -10,7 +10,10 @@ import java.util.UUID;
 
 
 @Entity
-@Table(name = "roles")
+@Table(
+        name = "roles",
+        uniqueConstraints = @UniqueConstraint(columnNames = "name")
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,15 +22,15 @@ import java.util.UUID;
 public class RoleEntity {
 
         @Id
-        @GeneratedValue(strategy = GenerationType.UUID)
-        @Column(columnDefinition = "uuid", updatable = false, nullable = false)
-        private UUID id;
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
         @Enumerated(EnumType.STRING)
-        @Column(nullable = false, unique = true)
-        private RoleName name;
+        @Column(nullable = false, updatable = false)
+        private RoleName name;  // fixed master data
 
-        @OneToMany(mappedBy = "role",fetch = FetchType.LAZY)
+        @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
+        @Builder.Default
         private Set<UserRoleEntity> users = new HashSet<>();
-    }
+}
 
