@@ -2,9 +2,14 @@ package com.siddu.auth.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.siddu.auth.dto.Response.ApierrorResponse;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -14,4 +19,48 @@ public class GlobalExceptionHandler {
         HttpStatus.CONFLICT.name(),e.getMessage()));
 
     }
+    @ExceptionHandler(InvalidCreditionalException.class)
+    public ResponseEntity<ApierrorResponse> HandleInvalidCreditionalException(InvalidCreditionalException e){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApierrorResponse(HttpStatus.BAD_REQUEST.name(),e.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationErrors(
+            MethodArgumentNotValidException ex) {
+
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getBindingResult()
+                .getFieldErrors()
+                .forEach(error ->
+                        errors.put(error.getField(), error.getDefaultMessage())
+                );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errors);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApierrorResponse> handleMissingBody() {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ApierrorResponse(
+                        HttpStatus.BAD_REQUEST.name(),
+                        "Request body is missing or malformed"
+                ));
+    }
+    @ExceptionHandler(InvalidUserStateException.class)
+    public ResponseEntity<ApierrorResponse> handleInvalidUserStateException(InvalidUserStateException e){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApierrorResponse(HttpStatus.BAD_REQUEST.name(),e.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApierrorResponse> handleIllegalStateException(IllegalStateException e){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApierrorResponse(HttpStatus.BAD_REQUEST.name(),e.getMessage()));
+    }
+
+
+
+
 }

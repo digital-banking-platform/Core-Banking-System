@@ -82,6 +82,22 @@ public class JwtService {
         return UUID.fromString(claims.getSubject());
     }
 
+    public List<String> extractRoles(String token) {
+        Claims claims = extractAllClaims(token);
+
+        Object rolesObj = claims.get("roles");
+
+        if (rolesObj instanceof List<?> roles) {
+            return roles.stream()
+                    .map(String::valueOf)
+                    .toList();
+        }
+
+        return List.of();
+    }
+
+
+
 
 
     private Claims extractAllClaims(String token) {
