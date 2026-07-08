@@ -1,12 +1,14 @@
 package com.siddu.auth.service;
 
-import com.siddu.auth.Enums.RoleName;
-import com.siddu.auth.dto.Requests.RoleAssignRequest;
+import com.siddu.auth.dto.Requests.RoleRequest;
+import com.siddu.auth.dto.Requests.StatusUpdateRequest;
 import com.siddu.auth.dto.Response.RolesResponse;
+import com.siddu.auth.dto.Response.StatusUpdateResponse;
 import com.siddu.auth.dto.Response.UserStatusResponse;
 import com.siddu.auth.entity.RoleEntity;
 import com.siddu.auth.entity.UserEntity;
 import com.siddu.auth.entity.UserRoleEntity;
+import com.siddu.auth.exception.ResourceExistException;
 import com.siddu.auth.exception.ResourceNotFoundException;
 import com.siddu.auth.repository.RoleRepository;
 import com.siddu.auth.repository.UserRepository;
@@ -75,22 +77,13 @@ public class UserAccessManagementService {
                 .roles(rolesMap.getOrDefault(user.getId(), List.of())).build());
     }
 
-    public static RoleName fromString(String role) {
-        try {
-            return RoleName.valueOf(role.toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            throw new ResourceNotFoundException("Role Not Found: " + role);
-        }
-    }
 
-
-    public RolesResponse assignRole(@RequestBody RoleAssignRequest request) {
-
+    @Transactional
+    public RolesResponse assignRole(@RequestBody RoleRequest request) {
 
         UUID userId=userRepository.findIdByEmail(request.getEmail()).orElseThrow(()->new ResourceNotFoundException("User not found"));
 
-        RoleName rolename=fromString(request.getRoles());
-        long roleId = roleRepository.findIdByName(rolename)
+        long roleId = roleRepository.findIdByName(request.getRole())
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
         if (userRoleRepository.existsByUserIdAndRoleId(userId, roleId)) {
@@ -104,7 +97,39 @@ public class UserAccessManagementService {
                 .role(roleRef)
                 .build();
         userRoleRepository.save(userRole);
-        return new RolesResponse("role assigned successfully",rolename.name());
+        return new RolesResponse("role assigned successfully",request.getRole());
 
     }
+
+    @Transactional
+    public RolesResponse revokeRole(RoleRequest request) {
+        UUID userId=userRepository.findIdByEmail(request.getEmail()).orElseThrow(()->new ResourceNotFoundException("User not found"));
+
+        long roleId = roleRepository.findIdByName(request.getRole())
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+
+        int deleted=userRoleRepository.deleteByUserIdAndRoleId(userId,roleId);
+        if(deleted==0){
+            throw new ResourceExistException("user does not have this role assigned");
+        }
+        return new RolesResponse("role revoked successfully",request.getRole());
+
+    }
+
+
+    @Transactional
+    public StatusUpdateResponse updateStatus(StatusUpdateRequest request) {
+        UserEntity user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (user.getStatus() == request.getStatus()) {
+            throw new ResourceExistException("User is already " + request.getStatus());
+        }
+        user.setStatus(request.getStatus());
+        userRepository.save(user);
+        return new
+                StatusUpdateResponse(user.getEmail(),user.getStatus(),
+                "status updated successfully");
+    }
+
 }

@@ -2,6 +2,7 @@ package com.siddu.auth.config;
 
 import com.siddu.auth.exception.CustomAccessDeniedHandler;
 import com.siddu.auth.security.JwtAuthenticationFilter;
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,7 +37,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
                             .authenticationEntryPoint(customAuthenticationEntryPoint)
                     )
                     .authorizeHttpRequests(auth -> auth
+                            .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                             .requestMatchers("/Auth/**").permitAll()
+                            .requestMatchers("/error").permitAll()
                             .requestMatchers("/admin/**").hasRole("ADMIN")
                             .anyRequest().authenticated()
                     )

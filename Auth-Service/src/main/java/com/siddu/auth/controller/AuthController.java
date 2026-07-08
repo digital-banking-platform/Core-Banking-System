@@ -3,6 +3,7 @@ package com.siddu.auth.controller;
 import com.siddu.auth.dto.Requests.LoginRequest;
 import com.siddu.auth.dto.Requests.RegisterRequest;
 import com.siddu.auth.dto.Response.LogoutResponse;
+import com.siddu.auth.dto.Response.TokenResponse;
 import com.siddu.auth.dto.Response.UserResponse;
 import com.siddu.auth.dto.Response.AuthResult;
 import com.siddu.auth.security.JwtService;
@@ -38,7 +39,7 @@ public class AuthController {
 
     }
 
-    @GetMapping("/Auth/login")
+    @PostMapping("/Auth/login")
     public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest loginRequest,
                                               HttpServletResponse response, HttpServletRequest request) {
         String deviceInfo=request.getHeader("User-Agent");
@@ -49,11 +50,23 @@ public class AuthController {
         return ResponseEntity.ok(authResult.getUserResponse());
     }
 
-    @GetMapping("Auth/logout")
-    public ResponseEntity<LogoutResponse> logout(@RequestHeader("Authorization") String authheader) {
+    @PostMapping("Auth/logout")
+    public ResponseEntity<LogoutResponse> logout(@RequestHeader("Authorization") String authheader,HttpServletResponse response) {
         String token=authheader.substring(7);
         UUID  userid=jwtService.extractUserId(token);
-        return ResponseEntity.ok(authService.logoutUser(userid));
+        LogoutResponse logoutResponse = authService.logoutUser(userid);
+        cookieutil.clearAccessToken(response);
+        cookieutil.clearRefreshToken(response);
+        return ResponseEntity.ok(logoutResponse);
+
+    }
+
+    @PostMapping("Auth/refresh")
+    public ResponseEntity<?> rotateRefreshToken(@CookieValue("REFRESH_TOKEN") String refreshToken,HttpServletResponse response) {
+        TokenResponse tokenresponse=authService.rotateRefreshToken(refreshToken);
+        cookieutil.addAccessToken(response,tokenresponse.getToken());
+        cookieutil.addRefreshToken(response,tokenresponse.getRefreshToken());
+        return ResponseEntity.ok("refresh token rotated successfully");
 
     }
 }

@@ -21,6 +21,8 @@ public interface SessionRepository extends JpaRepository<SessionEntity, UUID> {
 """)
     void deactivateAllByUser(@Param("userId") UUID userId);
 
+    Optional<SessionEntity>  findByRefreshTokenHash(String refreshToken);
+
     void deleteByUser_Id(UUID userId);
 
 

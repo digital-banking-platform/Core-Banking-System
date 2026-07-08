@@ -1,7 +1,9 @@
 package com.siddu.auth.controller;
 
-import com.siddu.auth.dto.Requests.RoleAssignRequest;
+import com.siddu.auth.dto.Requests.RoleRequest;
+import com.siddu.auth.dto.Requests.StatusUpdateRequest;
 import com.siddu.auth.dto.Response.RolesResponse;
+import com.siddu.auth.dto.Response.StatusUpdateResponse;
 import com.siddu.auth.dto.Response.UserStatusResponse;
 import com.siddu.auth.service.UserAccessManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +29,23 @@ public class UserAccessController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/users/roles/assign")
-    public ResponseEntity<RolesResponse> assignRole(@RequestBody RoleAssignRequest roleAssignRequest) {
+    public ResponseEntity<RolesResponse> assignRole(@RequestBody RoleRequest roleAssignRequest) {
         return ResponseEntity.ok(userAccessManagementService.assignRole(roleAssignRequest));
 
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/admin/users")
+    public ResponseEntity<RolesResponse> revokeRole(@RequestBody RoleRequest roleRevokeRequest) {
+        return ResponseEntity.ok(userAccessManagementService.revokeRole(roleRevokeRequest));
+
+    }
+
+
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PatchMapping("/admin/users/status")
+     public ResponseEntity<StatusUpdateResponse>  updateStatus(@RequestBody StatusUpdateRequest request){
+        return ResponseEntity.ok(userAccessManagementService.updateStatus(request));
     }
 
 

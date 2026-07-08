@@ -1,15 +1,13 @@
 package com.siddu.auth.dto.Response;
 
-import com.siddu.auth.Enums.RoleName;
+import com.siddu.auth.Enums.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.List;
-
 @Getter
 @AllArgsConstructor
-public class RolesResponse {
+public class StatusUpdateResponse {
+    private String email;
+    private UserStatus status;
     private String message;
-    private RoleName role;
-
 }

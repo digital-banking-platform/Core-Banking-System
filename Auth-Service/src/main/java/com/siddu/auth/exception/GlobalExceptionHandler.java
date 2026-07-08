@@ -42,15 +42,6 @@ public class GlobalExceptionHandler {
                 .body(errors);
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApierrorResponse> handleMissingBody() {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(new ApierrorResponse(
-                        HttpStatus.BAD_REQUEST.name(),
-                        "Request body is missing or malformed"
-                ));
-    }
     @ExceptionHandler(InvalidUserStateException.class)
     public ResponseEntity<ApierrorResponse> handleInvalidUserStateException(InvalidUserStateException e){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).
@@ -68,6 +59,28 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).
                 body(new ApierrorResponse(HttpStatus.CONFLICT.name(),e.getMessage()));
     }
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ApierrorResponse> handleInvalidTokenException(InvalidTokenException e){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApierrorResponse(HttpStatus.UNAUTHORIZED.name(),e.getMessage()));
+    }
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApierrorResponse> handleResourceNotFoundException(ResourceNotFoundException e){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).
+                body(new ApierrorResponse(HttpStatus.NOT_FOUND.name(),e.getMessage()));
+    }
+
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApierrorResponse> handleMissingBody() {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ApierrorResponse(
+                        HttpStatus.BAD_REQUEST.name(),
+                        "Request body is missing or malformed"
+                ));
+    }
+
+
 
 
 

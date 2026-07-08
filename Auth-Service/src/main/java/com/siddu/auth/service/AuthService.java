@@ -7,6 +7,7 @@ import com.siddu.auth.dto.Response.*;
 import com.siddu.auth.entity.*;
 import com.siddu.auth.exception.EmailAlreadyExistsException;
 import com.siddu.auth.exception.InvalidCreditionalException;
+import com.siddu.auth.exception.InvalidTokenException;
 import com.siddu.auth.repository.RoleRepository;
 import com.siddu.auth.repository.SessionRepository;
 import com.siddu.auth.repository.UserRepository;
@@ -52,12 +53,14 @@ public class AuthService {
         UserEntity user = UserEntity.builder()
                 .email(registerRequest.getEmail())
                 .passwordHash(passwordEncoder.encode(registerRequest.getPassword()))
+                .isEmailVerified(true)
                 .status(UserStatus.ACTIVE)
                 .build();
 
         user=userRepository.save(user);
 
-        RoleEntity role=roleRepository.findByName(RoleName.ADMIN).orElseThrow(() -> new IllegalStateException("role user not found"));
+        RoleEntity role=roleRepository.findByName(RoleName.USER).orElseThrow(() ->
+                new IllegalStateException("role user not found"));
 
         UserRoleEntity userRole = UserRoleEntity.builder()
                 .user(user)
@@ -80,7 +83,7 @@ public class AuthService {
                 .deviceInfo(deviceInfo)
                 .ipAddress(ipAddress)
                 .isActive(true)
-                .expiresAt(Instant.now().plusSeconds(7 * 24 * 60 * 60)) // 7 days
+                .expiresAt(Instant.now().plusSeconds(7 * 24 * 60 * 60))
                 .build();
 
         sessionRepository.save(session);
@@ -92,6 +95,11 @@ public class AuthService {
     public AuthResult loginUser(LoginRequest loginRequest,String deviceInfo,String ipAddress) {
         UserEntity user=userRepository.findByEmail(loginRequest.getEmail()).
                 orElseThrow(() -> new InvalidCreditionalException("invalid credentials"));
+
+//        if(!userRepository.existsByEmailAndIsEmailVerifiedTrue(loginRequest.getEmail())) {
+//            throw new InvalidCreditionalException("email not verified");
+//
+//        }
 
         if(!passwordEncoder.matches(loginRequest.getPassword(),user.getPasswordHash())) {
             throw new InvalidCreditionalException("invalid credentials");
@@ -127,6 +135,39 @@ public class AuthService {
          return new LogoutResponse("logout successfully");
 
     }
+
+    @Transactional
+    public TokenResponse rotateRefreshToken(String refreshToken) {
+         if(!jwtService.isRefreshTokenValid(refreshToken)) {
+             throw new InvalidTokenException("invalid token");
+         }
+
+         String Hashed_RefreshToken=TokenHashUtil.hash(refreshToken);
+
+        SessionEntity session= sessionRepository.findByRefreshTokenHash(Hashed_RefreshToken)
+                .orElseThrow(() -> new InvalidTokenException("invalid refresh token"));
+
+        if(!session.isActive()){
+            throw new InvalidTokenException("refresh token revoked");
+        }
+
+        if(session.getExpiresAt().isBefore(Instant.now())){
+            session.setActive(false);
+            throw new InvalidTokenException("Refresh token expired");
+        }
+        UUID userId = session.getUser().getId();
+        String email=session.getUser().getEmail();
+        List<String> roles=userRoleRepository.findRoleNamesByUserId(userId);
+
+        String newAccessToken=jwtService.generateAccessToken(userId,email,roles);
+        String newRefreshToken=jwtService.generateRefreshToken(userId);
+
+        session.setRefreshTokenHash(TokenHashUtil.hash(newRefreshToken));
+
+
+        return new TokenResponse(newAccessToken,newRefreshToken);
+    }
+
 
 
 }

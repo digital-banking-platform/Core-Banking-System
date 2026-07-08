@@ -95,11 +95,6 @@ public class JwtService {
 
         return List.of();
     }
-
-
-
-
-
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(key)

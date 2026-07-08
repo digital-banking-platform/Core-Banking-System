@@ -45,6 +45,8 @@ public class UserEntity {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Instant updatedAt;
+    @Column(name = "last_login_at")
+    private Instant lastLoginAt;
 
     // Relationships
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

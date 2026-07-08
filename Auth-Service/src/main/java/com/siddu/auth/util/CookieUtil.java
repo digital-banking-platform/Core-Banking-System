@@ -25,4 +25,22 @@ public class CookieUtil {
 
         response.addCookie(cookie);
     }
+
+    public void clearAccessToken(HttpServletResponse response) {
+        Cookie cookie = new Cookie("ACCESS_TOKEN", "");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
+
+    public void clearRefreshToken(HttpServletResponse response) {
+        Cookie cookie = new Cookie("REFRESH_TOKEN", "");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/auth/refresh");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
 }
