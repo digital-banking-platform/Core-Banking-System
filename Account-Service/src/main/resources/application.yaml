@@ -1,10 +1,11 @@
 server:
-  port: 8080
+  port: 8081
 spring:
   application:
-    name: Auth-Service
+    name: Account-Service
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/Auth_database
+    url: jdbc:postgresql://localhost:5432/Account-Database
     username: postgres
     password: 12345
     driver-class-name: org.postgresql.Driver
@@ -18,3 +19,5 @@ jwt:
   secret: Kp7q8Hf9m1Yv0M0RrXl+TtqUO9sA3R6c2ZkFJm1P3S0=
   access-token-expiration: 900000
   refresh-token-expiration: 604800000
+
+

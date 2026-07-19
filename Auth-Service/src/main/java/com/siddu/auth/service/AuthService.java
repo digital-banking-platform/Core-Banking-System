@@ -14,6 +14,7 @@ import com.siddu.auth.repository.UserRepository;
 import com.siddu.auth.repository.UserRoleRepository;
 import com.siddu.auth.security.JwtService;
 import com.siddu.auth.util.TokenHashUtil;
+import com.siddu.commonsecurity.Jwt.JwtValidator;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,9 +33,10 @@ public class AuthService {
     private final SessionRepository sessionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final JwtValidator jwtValidator;
      @Autowired
     public AuthService(UserRepository userRepository, UserRoleRepository userRoleRepository, RoleRepository roleRepository,
-                       SessionRepository sessionRepository, PasswordEncoder passwordEncoder, JwtService jwtService
+                       SessionRepository sessionRepository, PasswordEncoder passwordEncoder, JwtService jwtService, JwtValidator jwtValidator
      ) {
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
@@ -42,6 +44,7 @@ public class AuthService {
         this.sessionRepository = sessionRepository;
          this.passwordEncoder = passwordEncoder;
          this.jwtService = jwtService;
+         this.jwtValidator = jwtValidator;
 
     }
 
@@ -138,7 +141,7 @@ public class AuthService {
 
     @Transactional
     public TokenResponse rotateRefreshToken(String refreshToken) {
-         if(!jwtService.isRefreshTokenValid(refreshToken)) {
+         if(!jwtValidator.isRefreshTokenValid(refreshToken)) {
              throw new InvalidTokenException("invalid token");
          }
 

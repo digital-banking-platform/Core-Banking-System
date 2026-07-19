@@ -6,8 +6,8 @@ import com.siddu.auth.dto.Response.LogoutResponse;
 import com.siddu.auth.dto.Response.TokenResponse;
 import com.siddu.auth.dto.Response.UserResponse;
 import com.siddu.auth.dto.Response.AuthResult;
-import com.siddu.auth.security.JwtService;
 import com.siddu.auth.service.AuthService;
+import com.siddu.commonsecurity.Jwt.JwtValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -20,12 +20,12 @@ import java.util.UUID;
 public class AuthController {
     private final AuthService authService;
     private final CookieUtil cookieutil;
-    private final JwtService jwtService;
+    private final JwtValidator jwtValidator;
 
-    public AuthController(AuthService authService, CookieUtil cookieutil, JwtService jwtService) {
+    public AuthController(AuthService authService, CookieUtil cookieutil, JwtValidator jwtValidator) {
         this.authService = authService;
         this.cookieutil=cookieutil;
-        this.jwtService = jwtService;
+        this.jwtValidator = jwtValidator;
     }
     @PostMapping("/Auth/register")
     public ResponseEntity<UserResponse> RegisterUser(@Valid @RequestBody RegisterRequest registerRequest,
@@ -53,7 +53,7 @@ public class AuthController {
     @PostMapping("Auth/logout")
     public ResponseEntity<LogoutResponse> logout(@RequestHeader("Authorization") String authheader,HttpServletResponse response) {
         String token=authheader.substring(7);
-        UUID  userid=jwtService.extractUserId(token);
+        UUID  userid=jwtValidator.extractUserId(token);
         LogoutResponse logoutResponse = authService.logoutUser(userid);
         cookieutil.clearAccessToken(response);
         cookieutil.clearRefreshToken(response);
@@ -67,6 +67,15 @@ public class AuthController {
         cookieutil.addAccessToken(response,tokenresponse.getToken());
         cookieutil.addRefreshToken(response,tokenresponse.getRefreshToken());
         return ResponseEntity.ok("refresh token rotated successfully");
+
+    }
+    @PutMapping("/Auth/reset-password")
+    public void resetPassword(){
+
+    }
+
+    @PutMapping("Auth/change-password")
+    public void changePassword(){
 
     }
 }

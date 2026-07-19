@@ -1,7 +1,8 @@
 package com.siddu.auth.config;
 
-import com.siddu.auth.exception.CustomAccessDeniedHandler;
-import com.siddu.auth.security.JwtAuthenticationFilter;
+import com.siddu.commonsecurity.Filter.JwtAuthenticationFilter;
+import com.siddu.commonsecurity.exception.JwtAccessDeniedHandler;
+import com.siddu.commonsecurity.exception.JwtAuthenticationEntryPoint;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -19,10 +20,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
     @EnableMethodSecurity(prePostEnabled = true)
     @RequiredArgsConstructor
     public class SecurityConfig {
-
         private final JwtAuthenticationFilter jwtAuthenticationFilter;
-        private final CustomAccessDeniedHandler customAccessDeniedHandler;
-        private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+        private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+        private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+
+
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -33,14 +35,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
                             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                     )
                     .exceptionHandling(ex -> ex
-                            .accessDeniedHandler(customAccessDeniedHandler)
-                            .authenticationEntryPoint(customAuthenticationEntryPoint)
+                            .accessDeniedHandler(jwtAccessDeniedHandler)
+                            .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                     )
                     .authorizeHttpRequests(auth -> auth
                             .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                             .requestMatchers("/Auth/**").permitAll()
                             .requestMatchers("/error").permitAll()
-                            .requestMatchers("/admin/**").hasRole("ADMIN")
+                            .requestMatchers("/admin/**").hasAnyRole("ADMIN","MANAGER")
                             .anyRequest().authenticated()
                     )
                     .addFilterBefore(

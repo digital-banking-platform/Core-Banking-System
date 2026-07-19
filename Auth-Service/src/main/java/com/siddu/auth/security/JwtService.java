@@ -5,7 +5,6 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.List;
@@ -16,15 +15,18 @@ public class JwtService {
 
     private final SecretKey key;
     private final long accessTokenExpiry;
+    private final long refreshTokenExpiry;
 
     public JwtService(
             @Value("${jwt.secret}") String secret,
-            @Value("${jwt.access-expiry-ms}") long accessTokenExpiry
+            @Value("${jwt.access-token-expiration}") long accessTokenExpiry,
+            @Value("${jwt.refresh-token-expiration}") long refreshTokenExpiry
     ) {
         this.key = Keys.hmacShaKeyFor(
                 Decoders.BASE64.decode(secret)
         );
         this.accessTokenExpiry = accessTokenExpiry;
+        this.refreshTokenExpiry=refreshTokenExpiry;
     }
 
 
@@ -49,61 +51,8 @@ public class JwtService {
                 .subject(userId.toString())
                 .claim("type", "REFRESH")
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000))
+                .expiration(new Date(System.currentTimeMillis() +refreshTokenExpiry ))
                 .signWith(key)
                 .compact();
-    }
-
-
-    public boolean isTokenValid(String token) {
-        try {
-            extractAllClaims(token);
-            return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-    public boolean isRefreshTokenValid(String refreshToken) {
-        try {
-            Claims claims = extractAllClaims(refreshToken);
-
-            return "REFRESH".equals(claims.get("type", String.class))
-                    && !isExpired(claims);
-
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-
-    public UUID extractUserId(String token) {
-        Claims claims = extractAllClaims(token);
-        return UUID.fromString(claims.getSubject());
-    }
-
-    public List<String> extractRoles(String token) {
-        Claims claims = extractAllClaims(token);
-
-        Object rolesObj = claims.get("roles");
-
-        if (rolesObj instanceof List<?> roles) {
-            return roles.stream()
-                    .map(String::valueOf)
-                    .toList();
-        }
-
-        return List.of();
-    }
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
-
-    private boolean isExpired(Claims claims) {
-        return claims.getExpiration().before(new Date());
     }
 }
