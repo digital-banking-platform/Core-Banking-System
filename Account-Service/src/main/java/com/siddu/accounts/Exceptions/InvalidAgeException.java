@@ -1,0 +1,7 @@
+package com.siddu.accounts.Exceptions;
+
+public class InvalidAgeException extends RuntimeException {
+    public InvalidAgeException(String message) {
+        super(message);
+    }
+}
