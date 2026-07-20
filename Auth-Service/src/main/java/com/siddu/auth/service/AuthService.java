@@ -3,16 +3,13 @@ package com.siddu.auth.service;
 import com.siddu.auth.Enums.*;
 import com.siddu.auth.dto.Requests.LoginRequest;
 import com.siddu.auth.dto.Requests.RegisterRequest;
+import com.siddu.auth.dto.Requests.SetPinRequest;
 import com.siddu.auth.dto.Response.*;
 import com.siddu.auth.entity.*;
-import com.siddu.auth.exception.EmailAlreadyExistsException;
-import com.siddu.auth.exception.InvalidCreditionalException;
-import com.siddu.auth.exception.InvalidTokenException;
-import com.siddu.auth.repository.RoleRepository;
-import com.siddu.auth.repository.SessionRepository;
-import com.siddu.auth.repository.UserRepository;
-import com.siddu.auth.repository.UserRoleRepository;
+import com.siddu.auth.exception.*;
+import com.siddu.auth.repository.*;
 import com.siddu.auth.security.JwtService;
+import com.siddu.auth.util.SecurityUtils;
 import com.siddu.auth.util.TokenHashUtil;
 import com.siddu.commonsecurity.Jwt.JwtValidator;
 import jakarta.transaction.Transactional;
@@ -34,9 +31,11 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JwtValidator jwtValidator;
+    private final UserSecurityRepository userSecurityRepository;
      @Autowired
     public AuthService(UserRepository userRepository, UserRoleRepository userRoleRepository, RoleRepository roleRepository,
-                       SessionRepository sessionRepository, PasswordEncoder passwordEncoder, JwtService jwtService, JwtValidator jwtValidator
+                       SessionRepository sessionRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
+                       JwtValidator jwtValidator, UserSecurityRepository userSecurityRepository
      ) {
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
@@ -45,6 +44,7 @@ public class AuthService {
          this.passwordEncoder = passwordEncoder;
          this.jwtService = jwtService;
          this.jwtValidator = jwtValidator;
+         this.userSecurityRepository = userSecurityRepository;
 
     }
 
@@ -169,6 +169,27 @@ public class AuthService {
 
 
         return new TokenResponse(newAccessToken,newRefreshToken);
+    }
+
+    public SuccessResponse setpin(SetPinRequest request) {
+         UserEntity user=userRepository.findById(SecurityUtils.getCurrentUserId()).orElseThrow(
+                 () -> new ResourceNotFoundException("invalid user id")
+         );
+         if(!user.getStatus().equals(UserStatus.ACTIVE)){
+             throw new InvalidUserStateException("user is not active");
+         }
+         if(!request.getPin().equals(request.getPinConfirm())){
+             throw  new ResourceNotMatchedException("New PIN and Confirm PIN do not match");
+         }
+         if(userSecurityRepository.existsByUser(user)){
+             throw new ResourceExistException("Transaction PIN is already set");
+         }
+         UserSecurityEntity userSecurity=UserSecurityEntity.builder()
+                 .user(user)
+                 .transactionPinHash(passwordEncoder.encode(request.getPin()))
+                 .build();
+         userSecurityRepository.save(userSecurity);
+         return new SuccessResponse("Transaction PIN set successfully");
     }
 
 

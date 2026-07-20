@@ -40,7 +40,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
                     )
                     .authorizeHttpRequests(auth -> auth
                             .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                            .requestMatchers("/Auth/**").permitAll()
+                            .requestMatchers(
+                                    "/Auth/register",
+                                    "/Auth/login",
+                                    "/Auth/refresh",
+                                    "/Auth/logout"
+                            ).permitAll()
                             .requestMatchers("/error").permitAll()
                             .requestMatchers("/admin/**").hasAnyRole("ADMIN","MANAGER")
                             .anyRequest().authenticated()

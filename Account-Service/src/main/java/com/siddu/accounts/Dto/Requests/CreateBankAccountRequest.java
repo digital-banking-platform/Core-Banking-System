@@ -55,4 +55,5 @@ public class CreateBankAccountRequest {
 
     @NotBlank(message = "Please provide the branch ifscCode")
     private String IfscCode;
+
 }
