@@ -36,14 +36,14 @@ public class AccountManagementService {
         }
         while(branchEntityRepository.existsByIfscCode(Ifsc));
 
-//        BranchEntity branch= BranchEntity.builder()
-//                .branchName(request.getBranchName())
-//                .ifscCode(Ifsc)
-//                .addressLine(request.getBranchAddress())
-//                .city(request.getCity())
-//                .state(request.getState())
-//                .pincode(request.getPincode())
-//                .build();
+        BranchEntity branch= BranchEntity.builder()
+                .branchName(request.getBranchName())
+                .ifscCode(Ifsc)
+                .addressLine(request.getBranchAddress())
+                .city(request.getCity())
+                .state(request.getState())
+                .pincode(request.getPincode())
+                .build();
 
         branchEntityRepository.save(branch);
         return new ApiResponse<>(new BranchResponse(branch.getBranchName(),
