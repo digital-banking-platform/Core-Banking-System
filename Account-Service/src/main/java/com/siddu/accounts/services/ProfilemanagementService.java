@@ -6,6 +6,7 @@ import com.siddu.accounts.Dto.Responses.ProfileResponse;
 import com.siddu.accounts.Entity.AccountProfileEntity;
 import com.siddu.accounts.Enums.KycStatus;
 import com.siddu.accounts.Exceptions.DuplicateResourceFoundException;
+import com.siddu.accounts.Exceptions.KycMismatchException;
 import com.siddu.accounts.Exceptions.ResourceNotFoundException;
 import com.siddu.accounts.Utils.SecurityUtils;
 import com.siddu.accounts.repository.AccountProfileEntityRepository;
@@ -24,6 +25,11 @@ public class ProfilemanagementService {
            AccountProfileEntity profile = accountProfileEntityRepository.findByUserId(SecurityUtils
                            .getCurrentUserId()).orElseThrow(()->
                    new ResourceNotFoundException("user dont have account profile"));
+
+           if(profile.getKycStatus().equals(KycStatus.PENDING)){
+               throw new KycMismatchException("An address update request is already pending approval.")
+
+           }
 
            boolean sameaddress=profile.getAddressLine().equals(request.getAddress()) &&
                    profile.getCity().equals(request.getCity()) &&
