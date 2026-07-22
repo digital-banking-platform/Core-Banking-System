@@ -47,6 +47,8 @@ public class AccountController {
         return ResponseEntity.ok(bankAccountService.checkaccountbalance(request));
 
     }
+    @PutMapping("/profile/address")
+    public  ResponseEntity<?>
 
 
 

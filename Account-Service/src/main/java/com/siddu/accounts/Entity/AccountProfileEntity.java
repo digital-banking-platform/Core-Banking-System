@@ -70,8 +70,7 @@ public class AccountProfileEntity {
     private String country = "India";
     @Enumerated(EnumType.STRING)
     @Column(name = "kyc_status", nullable = false)
-    @Builder.Default
-    private KycStatus kycStatus = KycStatus.PENDING;
+    private KycStatus kycStatus ;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
