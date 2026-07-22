@@ -1,13 +1,14 @@
 package com.siddu.accounts.Controller;
 
+import com.siddu.accounts.Dto.Requests.AddressUpdateRequest;
 import com.siddu.accounts.Dto.Requests.CheckBalanceRequest;
 import com.siddu.accounts.Dto.Requests.CreateBankAccountRequest;
 import com.siddu.accounts.Dto.Responses.*;
 import com.siddu.accounts.Utils.SecurityUtils;
 import com.siddu.accounts.services.BankAccountService;
+import com.siddu.accounts.services.ProfilemanagementService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
@@ -17,10 +18,13 @@ public class AccountController {
 
 
     private final BankAccountService bankAccountService;
+    private final ProfilemanagementService profilemanagementService;
     @Autowired
-    public AccountController(BankAccountService bankAccountService) {
+    public AccountController(BankAccountService bankAccountService,
+                             ProfilemanagementService profilemanagementService
+    ) {
         this.bankAccountService = bankAccountService;
-
+        this.profilemanagementService = profilemanagementService;
     }
 
     @PostMapping("accounts/create-bank-account")
@@ -48,7 +52,9 @@ public class AccountController {
 
     }
     @PutMapping("/profile/address")
-    public  ResponseEntity<?>
+    public  ResponseEntity<ApiResponse<ProfileResponse>> updateAddress(@RequestBody AddressUpdateRequest request){
+        return ResponseEntity.ok(profilemanagementService.updateAddress(request));
+    }
 
 
 
