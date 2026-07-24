@@ -56,7 +56,7 @@ public class AccountController {
     public  ResponseEntity<ApiResponse<ProfileResponse>> updateAddress(@RequestBody AddressUpdateRequest request){
         return ResponseEntity.ok(profilemanagementService.updateAddress(request));
     }
-    @PatchMapping("/profile/name")
+    @PostMapping("/profile/name")
     public ResponseEntity<SuccessResponse> updateProfileName(@RequestBody UpdateProfileNameRequest request){
         return ResponseEntity.ok(profilemanagementService.updateProfilename(request.name()));
     }

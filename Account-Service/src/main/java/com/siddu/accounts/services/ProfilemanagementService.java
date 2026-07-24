@@ -28,7 +28,7 @@ public class ProfilemanagementService {
                    new ResourceNotFoundException("user dont have account profile"));
 
            if(profile.getKycStatus().equals(KycStatus.PENDING)){
-               throw new KycMismatchException("An address update request is already pending approval.");
+               throw new KycMismatchException("your KYC  profile already in pending state.");
 
            }
 
@@ -63,7 +63,7 @@ public class ProfilemanagementService {
        AccountProfileEntity profile= accountProfileEntityRepository.findByUserId(SecurityUtils.getCurrentUserId()).orElseThrow(()->
                 new DuplicateResourceFoundException("user dont have account profile"));
        if(profile.getKycStatus().equals(KycStatus.PENDING)){
-           throw new KycMismatchException("An Accountholdername update request is already pending");
+           throw new KycMismatchException("your KYC  profile already in pending state.");
        }
        if(profile.getAccountHolderName().equals(name)){
            throw new DuplicateResourceFoundException("new name must be different from current name");
