@@ -57,7 +57,7 @@ public class AccountController {
     }
     @PatchMapping("/profile/name")
     public ResponseEntity<SuccessResponse> updateprofilename(@RequestParam String name){
-        return ResponseEntity.ok(profilemanagementService.updateprofilename());
+        return ResponseEntity.ok(profilemanagementService.updateProfilename(name));
     }
 
 
