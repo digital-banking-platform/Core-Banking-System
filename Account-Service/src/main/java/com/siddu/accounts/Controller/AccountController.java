@@ -3,6 +3,7 @@ package com.siddu.accounts.Controller;
 import com.siddu.accounts.Dto.Requests.AddressUpdateRequest;
 import com.siddu.accounts.Dto.Requests.CheckBalanceRequest;
 import com.siddu.accounts.Dto.Requests.CreateBankAccountRequest;
+import com.siddu.accounts.Dto.Requests.UpdateProfileNameRequest;
 import com.siddu.accounts.Dto.Responses.*;
 import com.siddu.accounts.Utils.SecurityUtils;
 import com.siddu.accounts.services.BankAccountService;
@@ -56,8 +57,8 @@ public class AccountController {
         return ResponseEntity.ok(profilemanagementService.updateAddress(request));
     }
     @PatchMapping("/profile/name")
-    public ResponseEntity<SuccessResponse> updateprofilename(@RequestParam String name){
-        return ResponseEntity.ok(profilemanagementService.updateProfilename(name));
+    public ResponseEntity<SuccessResponse> updateProfileName(@RequestBody UpdateProfileNameRequest request){
+        return ResponseEntity.ok(profilemanagementService.updateProfilename(request.name()));
     }
 
 
