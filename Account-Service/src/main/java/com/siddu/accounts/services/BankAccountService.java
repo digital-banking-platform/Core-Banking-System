@@ -1,7 +1,9 @@
 package com.siddu.accounts.services;
 
+import com.siddu.accounts.Client.AuthClient;
 import com.siddu.accounts.Dto.Requests.CheckBalanceRequest;
 import com.siddu.accounts.Dto.Requests.CreateBankAccountRequest;
+import com.siddu.accounts.Dto.Requests.PinValidationRequest;
 import com.siddu.accounts.Dto.Requests.VerifyAccountRequest;
 import com.siddu.accounts.Dto.Responses.*;
 import com.siddu.accounts.Entity.AccountProfileEntity;
@@ -31,12 +33,15 @@ public class BankAccountService {
     private final AccountEntityRepository accountEntityRepository;
     private final AccountProfileEntityRepository accountProfileEntityRepository;
     private final BranchEntityRepository branchEntityRepository;
+    private final AuthClient authClient;
 
     public BankAccountService(AccountEntityRepository accountEntityRepository
-            , AccountProfileEntityRepository accountProfileEntityRepository, BranchEntityRepository branchEntityRepository) {
+            , AccountProfileEntityRepository accountProfileEntityRepository, BranchEntityRepository branchEntityRepository
+    , AuthClient authClient) {
         this.accountEntityRepository = accountEntityRepository;
         this.accountProfileEntityRepository = accountProfileEntityRepository;
         this.branchEntityRepository = branchEntityRepository;
+        this.authClient = authClient;
     }
 
 
@@ -180,11 +185,20 @@ public class BankAccountService {
                 ()-> new ResourceNotFoundException("account not found.")
         );
 
+
         if(!account.getProfile().getUserId().equals(SecurityUtils.getCurrentUserId())) {
             throw new AccessForbiddenException("You are not authorized to access this account");
         }
+
         if(!account.getStatus().equals(AccountStatus.ACTIVE)){
             throw new AccountInactiveException("account is not active");
+        }
+
+        PinValidationResponse response=authClient.validatePin(new
+                PinValidationRequest(SecurityUtils.getCurrentUserId(),
+                request.getPin()));
+        if(!response.valid()){
+            throw new InvalidPinException("invalid pin");
         }
 
         return new CheckBalanceResponse(

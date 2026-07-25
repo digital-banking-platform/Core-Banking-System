@@ -23,4 +23,8 @@ jwt:
   access-token-expiration: 900000
   refresh-token-expiration: 604800000
 
+services:
+  auth:
+    url: http://localhost:8080
+
 

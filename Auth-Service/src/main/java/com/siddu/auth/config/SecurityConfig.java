@@ -44,7 +44,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
                                     "/Auth/register",
                                     "/Auth/login",
                                     "/Auth/refresh",
-                                    "/Auth/logout"
+                                    "/Auth/logout",
+                                    "/internal/**"
                             ).permitAll()
                             .requestMatchers("/error").permitAll()
                             .requestMatchers("/admin/**").hasAnyRole("ADMIN","MANAGER")

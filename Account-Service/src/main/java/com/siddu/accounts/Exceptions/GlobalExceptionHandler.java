@@ -77,6 +77,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).
                 body(new ApiErrorResponse(HttpStatus.CONFLICT.name(),e.getMessage()));
     }
+    @ExceptionHandler(InvalidPinException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidPinException(InvalidPinException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).
+                body(new ApiErrorResponse(HttpStatus.BAD_REQUEST.name(),e.getMessage()));
+    }
 
 
 

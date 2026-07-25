@@ -2,6 +2,7 @@ package com.siddu.accounts;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication(
 		scanBasePackages = {
@@ -9,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 				"com.siddu.commonsecurity"
 		}
 )
+@EnableFeignClients
 public class AccountServiceApplication {
 
 	public static void main(String[] args) {
