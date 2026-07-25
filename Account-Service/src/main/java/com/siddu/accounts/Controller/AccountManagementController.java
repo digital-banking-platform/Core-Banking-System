@@ -3,8 +3,10 @@ package com.siddu.accounts.Controller;
 
 import com.siddu.accounts.Dto.Requests.CreateBranchRequest;
 import com.siddu.accounts.Dto.Responses.ApiResponse;
+import com.siddu.accounts.Dto.Responses.BankAccountResponse;
 import com.siddu.accounts.Dto.Responses.BranchResponse;
 import com.siddu.accounts.Dto.Responses.ProfileResponse;
+import com.siddu.accounts.Enums.AccountType;
 import com.siddu.accounts.services.AccountManagementService;
 import com.siddu.accounts.services.ProfilemanagementService;
 import org.springframework.data.domain.Page;
@@ -32,6 +34,13 @@ public class AccountManagementController {
     @GetMapping("/admin/profiles")
     public ResponseEntity<Page<ProfileResponse>> getProfiles(@RequestParam(defaultValue ="0" ) int page, @RequestParam(defaultValue = "6") int size) {
         return ResponseEntity.ok(profilemanagementService.getallprofiles(page,size));
+    }
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @GetMapping("/admin/accounts")
+    public ResponseEntity<Page<BankAccountResponse>> getaccounts(@RequestParam(defaultValue = "SAVINGS")AccountType accountType,
+                                                                 @RequestParam(defaultValue = "0") int page,
+                                                                 @RequestParam(defaultValue = "6") int size) {
+        return ResponseEntity.ok(profilemanagementService.getaccounts(accountType,page,size));
     }
 
 

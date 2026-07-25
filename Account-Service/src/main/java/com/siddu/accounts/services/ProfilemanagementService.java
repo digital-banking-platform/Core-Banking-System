@@ -2,14 +2,18 @@ package com.siddu.accounts.services;
 
 import com.siddu.accounts.Dto.Requests.AddressUpdateRequest;
 import com.siddu.accounts.Dto.Responses.ApiResponse;
+import com.siddu.accounts.Dto.Responses.BankAccountResponse;
 import com.siddu.accounts.Dto.Responses.ProfileResponse;
 import com.siddu.accounts.Dto.Responses.SuccessResponse;
 import com.siddu.accounts.Entity.AccountProfileEntity;
+import com.siddu.accounts.Entity.AccountsEntity;
+import com.siddu.accounts.Enums.AccountType;
 import com.siddu.accounts.Enums.KycStatus;
 import com.siddu.accounts.Exceptions.DuplicateResourceFoundException;
 import com.siddu.accounts.Exceptions.KycMismatchException;
 import com.siddu.accounts.Exceptions.ResourceNotFoundException;
 import com.siddu.accounts.Utils.SecurityUtils;
+import com.siddu.accounts.repository.AccountEntityRepository;
 import com.siddu.accounts.repository.AccountProfileEntityRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -21,8 +25,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProfilemanagementService {
     private final AccountProfileEntityRepository accountProfileEntityRepository;
-    public ProfilemanagementService(AccountProfileEntityRepository accountProfileEntityRepository) {
+    private final AccountEntityRepository accountEntityRepository;
+    public ProfilemanagementService(AccountProfileEntityRepository accountProfileEntityRepository
+    , AccountEntityRepository accountEntityRepository) {
         this.accountProfileEntityRepository = accountProfileEntityRepository;
+        this.accountEntityRepository = accountEntityRepository;
     }
 
     @Transactional
@@ -90,6 +97,29 @@ public class ProfilemanagementService {
                 profile.getCity(),profile.getState(),
                 profile.getPincode()
                 ,profile.getKycStatus()));
+    }
+    public Page<BankAccountResponse> getaccounts(AccountType accountType,int page,int size){
+        Pageable pageable = PageRequest.of(page, size,
+                Sort.by("createdAt").descending());
+        Page<AccountsEntity> accountsspage = accountEntityRepository.findByAccountType(accountType,pageable);
+        return  accountsspage.map(account -> new BankAccountResponse(
+                account.getAccountNumber(),
+                account.getAccountType(),
+                account.getStatus(),
+                account.getProfile().getAccountHolderName(),
+                account.getBranch().getIfscCode(),
+                account.getBranch().getBranchName(),
+                account.getProfile().getAddressLine(),
+                account.getProfile().getCity(),
+                account.getProfile().getState(),
+                account.getProfile().getPincode(),
+                account.getProfile().getGender(),
+                account.getProfile().getDateOfBirth(),
+                account.getProfile().getKycStatus()
+        ));
+
+
+
     }
 
 
