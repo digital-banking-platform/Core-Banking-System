@@ -12,6 +12,10 @@ import com.siddu.accounts.Exceptions.ResourceNotFoundException;
 import com.siddu.accounts.Utils.SecurityUtils;
 import com.siddu.accounts.repository.AccountProfileEntityRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -75,6 +79,19 @@ public class ProfilemanagementService {
                + " updated successfully. and is pending admin approval.");
 
     }
+    public Page<ProfileResponse> getallprofiles(int page,int size){
+        Pageable pageable = PageRequest.of(page, size,
+                Sort.by("createdAt").descending());
+
+        Page<AccountProfileEntity> profilespage = accountProfileEntityRepository.findAll(pageable);
+        return  profilespage.map(profile->new ProfileResponse(profile.getAccountHolderName(),
+                profile.getDateOfBirth(),
+                profile.getPhoneNumber(),profile.getAddressLine(),
+                profile.getCity(),profile.getState(),
+                profile.getPincode()
+                ,profile.getKycStatus()));
+    }
+
 
 
 }
