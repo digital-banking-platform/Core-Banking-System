@@ -38,7 +38,7 @@ public class AccountController {
     @GetMapping("Profile/me")
     public ResponseEntity<ProfileResponse> getProfile() {
         UUID userId= SecurityUtils.getCurrentUserId();
-        return ResponseEntity.ok(bankAccountService.getProfileDetails(userId));
+        return ResponseEntity.ok(profilemanagementService.getProfileDetails(userId));
     }
     @GetMapping("/accounts/me")
     public ResponseEntity<AccountsResponse> getAccountProfile() {
