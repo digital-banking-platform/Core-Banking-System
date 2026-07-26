@@ -8,6 +8,7 @@ import com.siddu.accounts.Dto.Responses.BranchResponse;
 import com.siddu.accounts.Dto.Responses.ProfileResponse;
 import com.siddu.accounts.Enums.AccountType;
 import com.siddu.accounts.services.AccountManagementService;
+import com.siddu.accounts.services.BankAccountService;
 import com.siddu.accounts.services.ProfilemanagementService;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,12 @@ import org.springframework.web.bind.annotation.*;
 public class AccountManagementController {
     private final AccountManagementService accountManagementService;
     private final ProfilemanagementService profilemanagementService;
+    private final BankAccountService bankAccountService;
     public AccountManagementController(AccountManagementService accountManagementService
-    , ProfilemanagementService profilemanagementService) {
+    , ProfilemanagementService profilemanagementService, BankAccountService bankAccountService) {
         this.accountManagementService = accountManagementService;
         this.profilemanagementService = profilemanagementService;
+        this.bankAccountService = bankAccountService;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -40,7 +43,7 @@ public class AccountManagementController {
     public ResponseEntity<Page<BankAccountResponse>> getaccounts(@RequestParam(defaultValue = "SAVINGS")AccountType accountType,
                                                                  @RequestParam(defaultValue = "0") int page,
                                                                  @RequestParam(defaultValue = "6") int size) {
-        return ResponseEntity.ok(profilemanagementService.getaccounts(accountType,page,size));
+        return ResponseEntity.ok(bankAccountService.getaccounts(accountType,page,size));
     }
 
 

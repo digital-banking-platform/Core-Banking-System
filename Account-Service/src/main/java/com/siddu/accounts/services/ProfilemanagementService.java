@@ -154,29 +154,7 @@ public class ProfilemanagementService {
                 profile.getPincode()
                 ,profile.getKycStatus()));
     }
-    public Page<BankAccountResponse> getaccounts(AccountType accountType,int page,int size){
-        Pageable pageable = PageRequest.of(page, size,
-                Sort.by("createdAt").descending());
-        Page<AccountsEntity> accountsspage = accountEntityRepository.findByAccountType(accountType,pageable);
-        return  accountsspage.map(account -> new BankAccountResponse(
-                account.getAccountNumber(),
-                account.getAccountType(),
-                account.getStatus(),
-                account.getProfile().getAccountHolderName(),
-                account.getBranch().getIfscCode(),
-                account.getBranch().getBranchName(),
-                account.getProfile().getAddressLine(),
-                account.getProfile().getCity(),
-                account.getProfile().getState(),
-                account.getProfile().getPincode(),
-                account.getProfile().getGender(),
-                account.getProfile().getDateOfBirth(),
-                account.getProfile().getKycStatus()
-        ));
 
-
-
-    }
 
     public  ProfileResponse getProfileDetails(UUID userId) throws AccountNotFoundException {
         Optional<AccountProfileEntity> profile = accountProfileEntityRepository.findByUserId(userId);
