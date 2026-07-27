@@ -10,7 +10,6 @@ import com.siddu.accounts.Entity.AccountProfileEntity;
 import com.siddu.accounts.Entity.AccountsEntity;
 import com.siddu.accounts.Entity.BranchEntity;
 import com.siddu.accounts.Enums.AccountStatus;
-import com.siddu.accounts.Enums.AccountType;
 import com.siddu.accounts.Exceptions.*;
 import com.siddu.accounts.Utils.AccountNumberGenerator;
 import com.siddu.accounts.Utils.SecurityUtils;
@@ -181,28 +180,6 @@ public class BankAccountService {
                 account.getAccountNumber(),
                 account.getStatus());
     }
-    public Page<BankAccountResponse> getaccounts(AccountType accountType, int page, int size){
-        Pageable pageable = PageRequest.of(page, size,
-                Sort.by("createdAt").descending());
-        Page<AccountsEntity> accountsspage = accountEntityRepository.findByAccountType(accountType,pageable);
-        return  accountsspage.map(account -> new BankAccountResponse(
-                account.getAccountNumber(),
-                account.getAccountType(),
-                account.getStatus(),
-                account.getProfile().getAccountHolderName(),
-                account.getBranch().getIfscCode(),
-                account.getBranch().getBranchName(),
-                account.getProfile().getAddressLine(),
-                account.getProfile().getCity(),
-                account.getProfile().getState(),
-                account.getProfile().getPincode(),
-                account.getProfile().getGender(),
-                account.getProfile().getDateOfBirth(),
-                account.getProfile().getKycStatus()
-        ));
 
-
-
-    }
 
 }

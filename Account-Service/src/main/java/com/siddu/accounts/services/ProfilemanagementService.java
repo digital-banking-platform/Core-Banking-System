@@ -3,16 +3,12 @@ package com.siddu.accounts.services;
 import com.siddu.accounts.Dto.Requests.AddressUpdateRequest;
 import com.siddu.accounts.Dto.Requests.CreateBankAccountRequest;
 import com.siddu.accounts.Dto.Responses.ApiResponse;
-import com.siddu.accounts.Dto.Responses.BankAccountResponse;
 import com.siddu.accounts.Dto.Responses.ProfileResponse;
 import com.siddu.accounts.Dto.Responses.SuccessResponse;
 import com.siddu.accounts.Entity.AccountProfileEntity;
-import com.siddu.accounts.Entity.AccountsEntity;
-import com.siddu.accounts.Enums.AccountType;
 import com.siddu.accounts.Enums.KycStatus;
 import com.siddu.accounts.Exceptions.*;
 import com.siddu.accounts.Utils.SecurityUtils;
-import com.siddu.accounts.repository.AccountEntityRepository;
 import com.siddu.accounts.repository.AccountProfileEntityRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
@@ -28,11 +24,10 @@ import java.util.UUID;
 @Service
 public class ProfilemanagementService {
     private final AccountProfileEntityRepository accountProfileEntityRepository;
-    private final AccountEntityRepository accountEntityRepository;
     public ProfilemanagementService(AccountProfileEntityRepository accountProfileEntityRepository
-    , AccountEntityRepository accountEntityRepository) {
+    ) {
         this.accountProfileEntityRepository = accountProfileEntityRepository;
-        this.accountEntityRepository = accountEntityRepository;
+
     }
 
     public void validateExistingProfile(AccountProfileEntity profile, CreateBankAccountRequest request) {

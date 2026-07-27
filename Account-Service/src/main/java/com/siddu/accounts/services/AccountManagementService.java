@@ -2,13 +2,17 @@ package com.siddu.accounts.services;
 
 import com.siddu.accounts.Dto.Requests.CreateBranchRequest;
 import com.siddu.accounts.Dto.Responses.ApiResponse;
+import com.siddu.accounts.Dto.Responses.BankAccountResponse;
 import com.siddu.accounts.Dto.Responses.BranchResponse;
 import com.siddu.accounts.Dto.Responses.ProfileResponse;
 import com.siddu.accounts.Entity.AccountProfileEntity;
+import com.siddu.accounts.Entity.AccountsEntity;
 import com.siddu.accounts.Entity.BranchEntity;
+import com.siddu.accounts.Enums.AccountType;
 import com.siddu.accounts.Enums.KycStatus;
 import com.siddu.accounts.Exceptions.DuplicateResourceFoundException;
 import com.siddu.accounts.Utils.IfscGenerator;
+import com.siddu.accounts.repository.AccountEntityRepository;
 import com.siddu.accounts.repository.AccountProfileEntityRepository;
 import com.siddu.accounts.repository.BranchEntityRepository;
 import org.springframework.data.domain.Page;
@@ -21,12 +25,19 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AccountManagementService {
+
     private final BranchEntityRepository branchEntityRepository;
+
     private final AccountProfileEntityRepository accountProfileEntityRepository;
+
+    private final AccountEntityRepository accountEntityRepository;
+
     public AccountManagementService(BranchEntityRepository branchEntityRepository
-    , AccountProfileEntityRepository accountProfileEntityRepository) {
+    , AccountProfileEntityRepository accountProfileEntityRepository
+            , AccountEntityRepository accountEntityRepository) {
         this.branchEntityRepository = branchEntityRepository;
         this.accountProfileEntityRepository = accountProfileEntityRepository;
+        this.accountEntityRepository = accountEntityRepository;
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -89,6 +100,30 @@ public class AccountManagementService {
                         profile.getPincode(),
                         profile.getKycStatus()
         ));
+    }
+
+    public Page<BankAccountResponse> getaccounts(AccountType accountType, int page, int size){
+        Pageable pageable = PageRequest.of(page, size,
+                Sort.by("createdAt").descending());
+        Page<AccountsEntity> accountsspage = accountEntityRepository.findByAccountType(accountType,pageable);
+        return  accountsspage.map(account -> new BankAccountResponse(
+                account.getAccountNumber(),
+                account.getAccountType(),
+                account.getStatus(),
+                account.getProfile().getAccountHolderName(),
+                account.getBranch().getIfscCode(),
+                account.getBranch().getBranchName(),
+                account.getProfile().getAddressLine(),
+                account.getProfile().getCity(),
+                account.getProfile().getState(),
+                account.getProfile().getPincode(),
+                account.getProfile().getGender(),
+                account.getProfile().getDateOfBirth(),
+                account.getProfile().getKycStatus()
+        ));
+
+
+
     }
 
 

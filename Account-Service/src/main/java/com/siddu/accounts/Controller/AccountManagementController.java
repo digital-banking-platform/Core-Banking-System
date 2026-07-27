@@ -44,7 +44,7 @@ public class AccountManagementController {
     public ResponseEntity<Page<BankAccountResponse>> getaccounts(@RequestParam(defaultValue = "SAVINGS")AccountType accountType,
                                                                  @RequestParam(defaultValue = "0") int page,
                                                                  @RequestParam(defaultValue = "6") int size) {
-        return ResponseEntity.ok(bankAccountService.getaccounts(accountType,page,size));
+        return ResponseEntity.ok(accountManagementService.getaccounts(accountType,page,size));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
