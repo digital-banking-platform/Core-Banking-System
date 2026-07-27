@@ -2,6 +2,9 @@ package com.siddu.accounts.repository;
 
 import com.siddu.accounts.Entity.AccountProfileEntity;
 import com.siddu.accounts.Enums.AccountType;
+import com.siddu.accounts.Enums.KycStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -12,6 +15,7 @@ public interface AccountProfileEntityRepository extends JpaRepository<AccountPro
     Optional<AccountProfileEntity> findByUserId(UUID UserId);
     boolean existsByAadhaarNumber(String AadhaarNumber);
     boolean existsByUserId(UUID userId);
+    Page<AccountProfileEntity> findByKycStatus(KycStatus kycStatus, Pageable pageable);
 
 
 

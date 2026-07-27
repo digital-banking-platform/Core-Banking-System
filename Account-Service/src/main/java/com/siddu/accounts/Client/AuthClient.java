@@ -16,3 +16,5 @@ public interface AuthClient {
     PinValidationResponse validatePin(@RequestBody PinValidationRequest pinValidationRequest);
 
 }
+
+

@@ -7,6 +7,7 @@ import com.siddu.accounts.Dto.Responses.BankAccountResponse;
 import com.siddu.accounts.Dto.Responses.BranchResponse;
 import com.siddu.accounts.Dto.Responses.ProfileResponse;
 import com.siddu.accounts.Enums.AccountType;
+import com.siddu.accounts.Enums.KycStatus;
 import com.siddu.accounts.services.AccountManagementService;
 import com.siddu.accounts.services.BankAccountService;
 import com.siddu.accounts.services.ProfilemanagementService;
@@ -44,6 +45,19 @@ public class AccountManagementController {
                                                                  @RequestParam(defaultValue = "0") int page,
                                                                  @RequestParam(defaultValue = "6") int size) {
         return ResponseEntity.ok(bankAccountService.getaccounts(accountType,page,size));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin/profiles/kycstatus")
+    public ResponseEntity<Page<ProfileResponse>> getProfilesBasedOnKYCStatus(
+            @RequestParam(defaultValue = "PENDING")KycStatus kycStatus
+           ,@RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "6") int size) {
+        return ResponseEntity.ok(accountManagementService.getProfilesBasedOnKYCStatus(kycStatus,page,size));
+
+
+
+
     }
 
 
