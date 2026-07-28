@@ -109,6 +109,7 @@ public class ProfilemanagementService {
            profile.setPincode(request.getPincode());
            profile.setKycStatus(KycStatus.PENDING);
            accountProfileEntityRepository.save(profile);
+
            return new ApiResponse<>(new ProfileResponse(
                    profile.getAccountHolderName(), profile.getDateOfBirth()
                    ,profile.getPhoneNumber(),
@@ -142,6 +143,10 @@ public class ProfilemanagementService {
                 Sort.by("createdAt").descending());
 
         Page<AccountProfileEntity> profilespage = accountProfileEntityRepository.findAll(pageable);
+     profilespage.forEach(p->{
+         System.out.println(p.getAccountHolderName());
+         System.out.println(p.getAadhaarNumber());
+     });
         return  profilespage.map(profile->new ProfileResponse(profile.getAccountHolderName(),
                 profile.getDateOfBirth(),
                 profile.getPhoneNumber(),profile.getAddressLine(),
@@ -151,7 +156,7 @@ public class ProfilemanagementService {
     }
 
 
-    public  ProfileResponse getProfileDetails(UUID userId) throws AccountNotFoundException {
+    public  ProfileResponse getProfileDetails(UUID userId) {
         Optional<AccountProfileEntity> profile = accountProfileEntityRepository.findByUserId(userId);
         if (profile.isEmpty()) {
             throw new AccountNotFoundException("user dont have bank accounts");
