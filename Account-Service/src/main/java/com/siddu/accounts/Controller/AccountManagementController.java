@@ -41,13 +41,14 @@ public class AccountManagementController {
     }
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping("/admin/accounts")
-    public ResponseEntity<Page<BankAccountResponse>> getaccounts(@RequestParam(defaultValue = "SAVINGS")AccountType accountType,
+    public ResponseEntity<Page<BankAccountResponse>> getaccounts(@RequestParam(defaultValue = "SAVINGS")
+                                                                     AccountType accountType,
                                                                  @RequestParam(defaultValue = "0") int page,
                                                                  @RequestParam(defaultValue = "6") int size) {
         return ResponseEntity.ok(accountManagementService.getaccounts(accountType,page,size));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping("/admin/profiles/kycstatus")
     public ResponseEntity<Page<ProfileResponse>> getProfilesBasedOnKYCStatus(
             @RequestParam(defaultValue = "PENDING")KycStatus kycStatus
@@ -59,26 +60,26 @@ public class AccountManagementController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/kycstatus/verify")
-    public  ResponseEntity<ApiResponse<KycUpdateResponse>> VerifyUserKycStatus(@Valid @RequestBody()ReKycRequest request){
+    public  ResponseEntity<ApiResponse<KycUpdateResponse>> VerifyUserKycStatus(@Valid @RequestBody()
+                                                                                   ReKycRequest request){
         return ResponseEntity.ok(accountManagementService.VerifyUserKycStatus(request));
 
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/kycstatus/reject")
-    public ResponseEntity<ApiResponse<KycUpdateResponse>> RejectUserKycStatus(@Valid @RequestBody()ReKycRequest request){
+    public ResponseEntity<ApiResponse<KycUpdateResponse>> RejectUserKycStatus(@Valid @RequestBody()
+                                                                                  ReKycRequest request){
         return ResponseEntity.ok(accountManagementService.RejectKycStatus(request));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/admin/kyc/search")
-    public ResponseEntity<UserProfileResponse> getUserProfile(@Valid @RequestBody GetUserProfileRequest request){
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
+    @PostMapping("/admin/kyc/search")
+    public ResponseEntity<UserProfileResponse> getUserProfile(@Valid @RequestBody
+                                                                  GetUserProfileRequest request){
         return  ResponseEntity.ok(accountManagementService.getUserProfile(request.AadhaarNumber()));
 
     }
-
-
-
 
 
 }
