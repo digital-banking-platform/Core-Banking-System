@@ -57,18 +57,18 @@ public class AccountManagementController {
     }
 
 
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @PutMapping("/admin/kycstatus/verify")
-//    public  ResponseEntity<ApiResponse<KycUpdateResponse>> VerifyUserKycStatus(@Valid @RequestBody()ReKycRequest request){
-//        return ResponseEntity.ok(accountManagementService.VerifyUserKycStatus(request));
-//
-//    }
-//
-//    @PreAuthorize("hasRole('ADMIN')")
-//    @PutMapping("/admin/kycstatus/reject")
-//    public ResponseEntity<ApiResponse<KycUpdateResponse>> RejectUserKycStatus(@Valid @RequestBody()ReKycRequest request){
-//        return ResponseEntity.ok(accountManagementService.RejectKycStatus(request));
-//    }
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/kycstatus/verify")
+    public  ResponseEntity<ApiResponse<KycUpdateResponse>> VerifyUserKycStatus(@Valid @RequestBody()ReKycRequest request){
+        return ResponseEntity.ok(accountManagementService.VerifyUserKycStatus(request));
+
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/kycstatus/reject")
+    public ResponseEntity<ApiResponse<KycUpdateResponse>> RejectUserKycStatus(@Valid @RequestBody()ReKycRequest request){
+        return ResponseEntity.ok(accountManagementService.RejectKycStatus(request));
+    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/admin/kyc/search")
