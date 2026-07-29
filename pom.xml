@@ -39,6 +39,7 @@
         <module>Common-Security</module>
         <module>Auth-Service</module>
         <module>Account-Service</module>
+        <module>Transaction-services</module>
     </modules>
 
 </project>
