@@ -1,3 +1,23 @@
+server :
+  port : 8082
 spring:
   application:
     name: Transaction-services
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/Transaction-Database
+    username: postgres
+    password: 12345
+    driver-class-name: org.postgresql.Driver
+
+    jpa:
+      hibernate:
+        ddl-auto: update
+      show-sql: true
+
+  jwt:
+    secret: Kp7q8Hf9m1Yv0M0RrXl+TtqUO9sA3R6c2ZkFJm1P3S0=
+    access-token-expiration: 900000
+    refresh-token-expiration: 604800000
+
+
