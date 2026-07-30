@@ -10,10 +10,10 @@ spring:
     password: 12345
     driver-class-name: org.postgresql.Driver
 
-    jpa:
-      hibernate:
-        ddl-auto: update
-      show-sql: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 
   jwt:
     secret: Kp7q8Hf9m1Yv0M0RrXl+TtqUO9sA3R6c2ZkFJm1P3S0=
