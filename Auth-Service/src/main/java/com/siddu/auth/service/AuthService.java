@@ -2,7 +2,6 @@ package com.siddu.auth.service;
 
 import com.siddu.auth.Enums.*;
 import com.siddu.auth.dto.Requests.LoginRequest;
-import com.siddu.auth.dto.Requests.PinValidationRequest;
 import com.siddu.auth.dto.Requests.RegisterRequest;
 import com.siddu.auth.dto.Requests.SetPinRequest;
 import com.siddu.auth.dto.Response.*;
@@ -13,6 +12,7 @@ import com.siddu.auth.security.JwtService;
 import com.siddu.auth.util.SecurityUtils;
 import com.siddu.auth.util.TokenHashUtil;
 import com.siddu.commonsecurity.Jwt.JwtValidator;
+import com.siddu.dto.pinvalidation.Request.PinValidationRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -192,12 +192,12 @@ public class AuthService {
          userSecurityRepository.save(userSecurity);
          return new SuccessResponse("Transaction PIN set successfully");
     }
-    public PinValidationResponse validatepin(PinValidationRequest request){
+    public com.siddu.dto.pinvalidation.Response.PinValidationResponse validatepin(PinValidationRequest request){
          String hash=userSecurityRepository.findTransactionPinHash(request.userId()).orElseThrow(
                  () -> new ResourceNotFoundException("invalid user id")
          );
          boolean isvalid=passwordEncoder.matches(request.pin(),hash);
-         return new PinValidationResponse(isvalid);
+         return new com.siddu.dto.pinvalidation.Response.PinValidationResponse(isvalid);
     }
 
 

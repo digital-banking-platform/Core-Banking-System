@@ -4,6 +4,9 @@ import com.siddu.accounts.Dto.Requests.VerifyAccountRequest;
 import com.siddu.accounts.Dto.Responses.BranchResponse;
 import com.siddu.accounts.Dto.Responses.VerifyAccountResponse;
 import com.siddu.accounts.services.BankAccountService;
+import com.siddu.accounts.services.BankTransferService;
+import com.siddu.dto.transfer.Request.AccountTransferRequest;
+import com.siddu.dto.transfer.Response.AccountTransferResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,10 +17,13 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class InternalAccountController {
     private final BankAccountService bankAccountService;
+    private final BankTransferService bankTransferService;
 
     @Autowired
-    InternalAccountController(BankAccountService bankAccountService) {
+    InternalAccountController(BankAccountService bankAccountService
+    , BankTransferService bankTransferService) {
         this.bankAccountService = bankAccountService;
+        this.bankTransferService = bankTransferService;
     }
 
     @GetMapping("accounts/internals/branches")
@@ -32,6 +38,11 @@ public class InternalAccountController {
     @PostMapping("/accounts/internals/verify-sender")
     public ResponseEntity<VerifyAccountResponse> verifysenderAccount(@Valid @RequestBody VerifyAccountRequest request) {
         return ResponseEntity.ok(bankAccountService.verifysenderaccount(request));
+    }
+
+    @PostMapping("/accounts/internals/transfer")
+    public ResponseEntity<AccountTransferResponse> transfer(@Valid @RequestBody AccountTransferRequest request) {
+        return ResponseEntity.ok(bankTransferService.transfer(request));
     }
 
 

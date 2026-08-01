@@ -26,14 +26,18 @@ import java.util.Map;
 
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType("application/json");
+            String message = authException.getMessage() != null
+                    ? authException.getMessage()
+                    : "Authentication required";
 
             Map<String, Object> body = Map.of(
-                    "status", 401,
+                    "status", HttpStatus.UNAUTHORIZED.value(),
                     "error", "UNAUTHORIZED",
-                    "message", "Authentication required",
+                    "message", message,
                     "path", request.getRequestURI(),
                     "timestamp", Instant.now().toString()
             );
+
 
             mapper.writeValue(response.getOutputStream(), body);
         }

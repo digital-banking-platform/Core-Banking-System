@@ -1,7 +1,6 @@
-package com.siddu.transactionservices.Repository;
+package com.siddu.accounts.repository;
 
-import com.siddu.transactionservices.Entity.AccountLedgerEntity;
-import com.siddu.transactionservices.Entity.TransactionEntity;
+import com.siddu.accounts.Entity.AccountLedgerEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;

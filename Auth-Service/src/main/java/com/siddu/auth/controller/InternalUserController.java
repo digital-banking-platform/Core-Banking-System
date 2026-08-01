@@ -1,7 +1,7 @@
 package com.siddu.auth.controller;
 
-import com.siddu.auth.dto.Requests.PinValidationRequest;
-import com.siddu.auth.dto.Response.PinValidationResponse;
+import com.siddu.dto.pinvalidation.Request.PinValidationRequest;
+import com.siddu.dto.pinvalidation.Response.PinValidationResponse;
 import com.siddu.auth.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

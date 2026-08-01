@@ -5,6 +5,7 @@ package com.siddu.transactionservices.Entity;
 import com.siddu.transactionservices.Enums.TransactionStatus;
 import com.siddu.transactionservices.Enums.TransactionType;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -66,6 +67,7 @@ import java.util.UUID;
                 )
         }
 )
+@Builder
 public class TransactionEntity {
 
     @Id
@@ -73,19 +75,20 @@ public class TransactionEntity {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @Column(name = "transaction_id", nullable = false, length = 20, updatable = false)
+    @Column(name = "transaction_id", nullable = false, length = 30, updatable = false)
     private String transactionId;
 
     @Column(name = "idempotency_key", nullable = false,unique = true,updatable = false)
     private UUID idempotencyKey;
 
-    @Column(name = "source_account_id", nullable = false,updatable = false)
+    @Column(name = "source_account_id",updatable = false)
     private UUID sourceAccountId;
 
-    @Column(name = "destination_account_id", nullable = false,updatable = false)
+    @Column(name = "destination_account_id",updatable = false)
     private UUID destinationAccountId;
 
     @Column(nullable = false, length = 3)
+    @Builder.Default
     private String currency = "INR";
 
     @Column(nullable = false, precision = 18, scale = 2)

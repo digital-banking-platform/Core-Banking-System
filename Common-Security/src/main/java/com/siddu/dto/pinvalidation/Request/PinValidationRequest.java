@@ -1,4 +1,4 @@
-package com.siddu.accounts.Dto.Requests;
+package com.siddu.dto.pinvalidation.Request;
 
 import java.util.UUID;
 

@@ -1,6 +1,7 @@
 package com.siddu.commonsecurity.Filter;
 
 import com.siddu.commonsecurity.Jwt.JwtValidator;
+import com.siddu.commonsecurity.exception.JwtAuthenticationEntryPoint;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -8,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,9 +27,12 @@ import java.util.stream.Collectors;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
    private final JwtValidator jwtValidator;
+    private final JwtAuthenticationEntryPoint authenticationEntryPoint;
 
-    public JwtAuthenticationFilter(JwtValidator jwtValidator) {
+    public JwtAuthenticationFilter(JwtValidator jwtValidator,
+                                   JwtAuthenticationEntryPoint authenticationEntryPoint) {
         this.jwtValidator = jwtValidator;
+        this.authenticationEntryPoint = authenticationEntryPoint;
     }
 
     @Override
@@ -56,7 +61,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             if (!jwtValidator.isTokenValid(token)) {
-                filterChain.doFilter(request, response);
+                authenticationEntryPoint.commence(
+                        request,
+                        response,
+                        new InsufficientAuthenticationException("Invalid or expired token")
+                );
                 return;
             }
 
@@ -83,8 +92,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        } catch (JwtException ex) {
+        }catch (JwtException ex) {
             SecurityContextHolder.clearContext();
+
+            authenticationEntryPoint.commence(
+                    request,
+                    response,
+                    new InsufficientAuthenticationException(
+                            "Invalid or expired token", ex)
+            );
+
+            return;
         }
 
         filterChain.doFilter(request, response);

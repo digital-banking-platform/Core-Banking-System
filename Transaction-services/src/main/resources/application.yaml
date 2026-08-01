@@ -15,9 +15,13 @@ spring:
       ddl-auto: update
     show-sql: true
 
-  jwt:
-    secret: Kp7q8Hf9m1Yv0M0RrXl+TtqUO9sA3R6c2ZkFJm1P3S0=
-    access-token-expiration: 900000
-    refresh-token-expiration: 604800000
+jwt:
+  secret: Kp7q8Hf9m1Yv0M0RrXl+TtqUO9sA3R6c2ZkFJm1P3S0=
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
+
+services:
+  account:
+    url: http://localhost:8081
 
 

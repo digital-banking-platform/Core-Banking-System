@@ -1,8 +1,8 @@
-package com.siddu.transactionservices.Entity;
+package com.siddu.accounts.Entity;
 
-
-import com.siddu.transactionservices.Enums.LedgerEntryType;
+import com.siddu.accounts.Enums.LedgerEntryType;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -34,6 +34,7 @@ import java.util.UUID;
                 )
         }
 )
+@Builder
 public class AccountLedgerEntity {
 
     @Id
@@ -44,14 +45,9 @@ public class AccountLedgerEntity {
     @Column(name = "account_id", nullable = false, updatable = false)
     private UUID accountId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "transaction_id",
-            nullable = false,
-            updatable = false,
-            foreignKey = @ForeignKey(name = "fk_ledger_transaction")
-    )
-    private TransactionEntity transaction;
+    @Column(name = "transaction_id", nullable = false, updatable = false)
+    private UUID transactionId;
+
 
     @Enumerated(EnumType.STRING)
     @Column(name = "entry_type", nullable = false, updatable = false)

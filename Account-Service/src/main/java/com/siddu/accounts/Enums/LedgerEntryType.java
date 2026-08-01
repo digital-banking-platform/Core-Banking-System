@@ -1,4 +1,4 @@
-package com.siddu.transactionservices.Enums;
+package com.siddu.accounts.Enums;
 
 public enum LedgerEntryType {
     DEBIT,

@@ -21,4 +21,5 @@ public interface AccountEntityRepository extends JpaRepository<AccountsEntity, U
     List<AccountsEntity> findByProfile(AccountProfileEntity profile);
 
 
+
 }

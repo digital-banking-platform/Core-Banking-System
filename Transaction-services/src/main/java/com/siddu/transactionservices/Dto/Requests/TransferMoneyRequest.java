@@ -1,8 +1,10 @@
 package com.siddu.transactionservices.Dto.Requests;
 
 import jakarta.validation.constraints.*;
-
 import java.math.BigDecimal;
+import java.util.UUID;
+
+
 public record TransferMoneyRequest(
 
         @NotBlank(message = "Sender account number required")
@@ -21,7 +23,7 @@ public record TransferMoneyRequest(
         String receiverAccountNumber,
 
 
-        @NotNull(message = "Amount required")
+        @NotNull(message = "Amount is required")
         @DecimalMin(
                 value = "1.00",
                 message = "Amount must be greater than 0"
@@ -32,7 +34,7 @@ public record TransferMoneyRequest(
         @NotBlank(message = "Transaction PIN required")
         @Pattern(
                 regexp = "\\d{6}",
-                message = "Transaction PIN must be 4 digits"
+                message = "Transaction PIN must be 6 digits"
         )
         String transactionPin,
 
@@ -40,6 +42,8 @@ public record TransferMoneyRequest(
                 max = 255,
                 message = "Description cannot exceed 255 characters"
         )
-        String description
+        String description,
 
+        @NotNull(message = "unique key is required")
+        UUID idempotencyKey
 ) {}
