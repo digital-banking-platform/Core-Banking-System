@@ -1,7 +1,13 @@
 package com.siddu.transactionservices.Exceptions;
 
+import com.siddu.transactionservices.Dto.Response.TransferMoneyResponse;
+import lombok.Getter;
+
+@Getter
 public class ResourceNotFoundException extends RuntimeException {
-    public ResourceNotFoundException(String message) {
-        super(message);
+    private final TransferMoneyResponse moneyResponse;
+
+    public ResourceNotFoundException(TransferMoneyResponse moneyResponse) {
+        this.moneyResponse = moneyResponse;
     }
 }

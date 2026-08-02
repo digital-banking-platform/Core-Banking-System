@@ -1,18 +1,19 @@
 package com.siddu.dto.transfer.Response;
 
 
+import com.siddu.Enums.TransferErrorCode;
 import com.siddu.Enums.TransferStatus;
 
 public record AccountTransferResponse(
 
         TransferStatus status,
 
-        String code,
+        TransferErrorCode errorCode,
 
         String message,
 
-        AccountTransferParty sender,
+        String  senderAccountHolderName,
 
-        AccountTransferParty receiver
+        String receiverAccountHolderName
 
 ) {}

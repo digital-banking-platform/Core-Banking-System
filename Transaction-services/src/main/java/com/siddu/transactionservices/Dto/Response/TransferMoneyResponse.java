@@ -16,8 +16,7 @@ public record TransferMoneyResponse(
         BigDecimal amount,
 
         TransactionStatus status,
-
-        String message,
+        String failureReason,
 
         LocalDateTime transactionTime
 

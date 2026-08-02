@@ -1,7 +1,7 @@
 package com.siddu.transactionservices.Dto.Response;
 
-public record ApiErrorResponse(
+public record ApiErrorResponse<T>(
         String error,
-        String message
+        T data
 ) {
 }

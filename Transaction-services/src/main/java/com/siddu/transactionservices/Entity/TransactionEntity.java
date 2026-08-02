@@ -5,16 +5,17 @@ package com.siddu.transactionservices.Entity;
 import com.siddu.transactionservices.Enums.TransactionStatus;
 import com.siddu.transactionservices.Enums.TransactionType;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.validator.constraints.Length;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -33,13 +34,8 @@ import java.util.UUID;
         indexes = {
 
                 @Index(
-                        name = "idx_transactions_source_account",
-                        columnList = "source_account_id"
-                ),
-
-                @Index(
                         name = "idx_transactions_destination_account",
-                        columnList = "destination_account_id"
+                        columnList = "destination_account_number"
                 ),
 
                 @Index(
@@ -53,17 +49,12 @@ import java.util.UUID;
                 ),
 
                 @Index(
-                        name = "idx_transactions_source_created",
-                        columnList = "source_account_id, created_at"
-                ),
-
-                @Index(
-                        name = "idx_transactions_destination_created",
-                        columnList = "destination_account_id, created_at"
-                ),
-                @Index(
                         name = "idx_transactions_status_created",
                         columnList = "status, created_at"
+                ),
+                @Index(
+                        name = "idx_idempotencyKey",
+                        columnList = "idempotency_key"
                 )
         }
 )
@@ -81,11 +72,13 @@ public class TransactionEntity {
     @Column(name = "idempotency_key", nullable = false,unique = true,updatable = false)
     private UUID idempotencyKey;
 
-    @Column(name = "source_account_id",updatable = false)
-    private UUID sourceAccountId;
+    @Column(name = "source_account_number",updatable = false)
+    @Length(min=12, max=12,message = "account number must be 12 digits")
+    private String sourceAccountNumber;
 
-    @Column(name = "destination_account_id",updatable = false)
-    private UUID destinationAccountId;
+    @Column(name = "destination_account_number",updatable = false)
+    @Length(min=12, max=12,message = "account number must be 12 digits")
+    private String destinationAccountNumber;
 
     @Column(nullable = false, length = 3)
     @Builder.Default
@@ -99,20 +92,29 @@ public class TransactionEntity {
     private TransactionType transactionType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false,updatable = false)
+    @Column(nullable = false)
     private TransactionStatus status;
 
     @Column(name = "failure_reason", length = 255)
     private String failureReason;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "completed_at", updatable = false)
+
+    @Column(name = "completed_at")
     private LocalDateTime completedAt;
+
+    @OneToOne(
+            mappedBy = "transaction",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private TransactionSnapshotEntity snapshot;
 }

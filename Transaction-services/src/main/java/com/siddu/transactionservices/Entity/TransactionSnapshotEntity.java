@@ -1,13 +1,14 @@
 package com.siddu.transactionservices.Entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @Entity
@@ -20,6 +21,7 @@ import java.util.UUID;
                 )
         }
 )
+@Builder
 public class TransactionSnapshotEntity {
 
     @Id
@@ -28,13 +30,7 @@ public class TransactionSnapshotEntity {
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "transaction_id",
-            nullable = false,
-            unique = true,
-            updatable = false,
-            foreignKey = @ForeignKey(name = "fk_transaction_snapshot_transaction")
-    )
+    @JoinColumn(name = "transaction_id", nullable = false, unique = true)
     private TransactionEntity transaction;
 
     @Column(name = "source_account_number", nullable = false, updatable = false, length = 16)
@@ -43,10 +39,10 @@ public class TransactionSnapshotEntity {
     @Column(name = "destination_account_number", nullable = false, updatable = false, length = 16)
     private String destinationAccountNumber;
 
-    @Column(name = "source_account_holder_name", nullable = false, updatable = false, length = 100)
+    @Column(name = "source_account_holder_name", updatable = false, length = 100)
     private String sourceAccountHolderName;
 
-    @Column(name = "destination_account_holder_name", nullable = false, updatable = false, length = 100)
+    @Column(name = "destination_account_holder_name",  updatable = false, length = 100)
     private String destinationAccountHolderName;
 
     @CreationTimestamp

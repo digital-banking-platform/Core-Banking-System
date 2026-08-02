@@ -11,13 +11,14 @@ import com.siddu.accounts.repository.AccountEntityRepository;
 import com.siddu.accounts.repository.AccountLedgerEntityRepository;
 import com.siddu.dto.pinvalidation.Request.PinValidationRequest;
 import com.siddu.dto.transfer.Request.AccountTransferRequest;
-import com.siddu.dto.transfer.Response.AccountTransferParty;
 import com.siddu.dto.transfer.Response.AccountTransferResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+
+import static com.siddu.Enums.TransferErrorCode.*;
 
 @Service
 public class BankTransferService {
@@ -41,7 +42,7 @@ public class BankTransferService {
         if (senderOptional.isEmpty()) {
             return new AccountTransferResponse(
                     TransferStatus.FAILED,
-                    "SENDER_ACCOUNT_NOT_FOUND",
+                    SENDER_ACCOUNT_NOT_FOUND,
                     "Sender account does not exist.",
                     null,
                     null
@@ -50,19 +51,16 @@ public class BankTransferService {
 
         AccountsEntity sender = senderOptional.get();
 
-        AccountTransferParty senderDetail = new AccountTransferParty(
-                sender.getId(),
-                sender.getProfile().getAccountHolderName(),
-                sender.getAccountNumber()
-        );
+        String senderAccountholderName=sender.getProfile().getAccountHolderName();
 
-        // ---------- Ownership ----------
+
+
         if (!sender.getProfile().getUserId().equals(request.userId())) {
             return new AccountTransferResponse(
                     TransferStatus.FAILED,
-                    "ACCESS_DENIED",
+                    ACCESS_DENIED,
                     "You are not authorized to access this account.",
-                    senderDetail,
+                    senderAccountholderName,
                     null
             );
         }
@@ -71,9 +69,9 @@ public class BankTransferService {
         if (sender.getStatus() != AccountStatus.ACTIVE) {
             return new AccountTransferResponse(
                     TransferStatus.FAILED,
-                    "SENDER_ACCOUNT_INACTIVE",
+                    SENDER_ACCOUNT_INACTIVE,
                     "Sender account is not active.",
-                    senderDetail,
+                    senderAccountholderName,
                     null
             );
         }
@@ -85,29 +83,24 @@ public class BankTransferService {
         if (receiverOptional.isEmpty()) {
             return new AccountTransferResponse(
                     TransferStatus.FAILED,
-                    "RECEIVER_ACCOUNT_NOT_FOUND",
+                    RECEIVER_ACCOUNT_NOT_FOUND,
                     "Receiver account does not exist.",
-                    senderDetail,
+                    senderAccountholderName,
                     null
             );
         }
 
         AccountsEntity receiver = receiverOptional.get();
-
-        AccountTransferParty receiverDetail = new AccountTransferParty(
-                receiver.getId(),
-                receiver.getProfile().getAccountHolderName(),
-                receiver.getAccountNumber()
-        );
+        String receiverAccountholderName=receiver.getProfile().getAccountHolderName();
 
 
         if (receiver.getStatus() != AccountStatus.ACTIVE) {
             return new AccountTransferResponse(
                     TransferStatus.FAILED,
-                    "RECEIVER_ACCOUNT_INACTIVE",
+                    RECEIVER_ACCOUNT_INACTIVE,
                     "Receiver account is not active.",
-                    senderDetail,
-                    receiverDetail
+                    senderAccountholderName,
+                    receiverAccountholderName
             );
         }
 
@@ -115,21 +108,20 @@ public class BankTransferService {
         if (sender.getId().equals(receiver.getId())) {
             return new AccountTransferResponse(
                     TransferStatus.FAILED,
-                    "SAME_ACCOUNT",
+                    SAME_ACCOUNT,
                     "Sender and receiver accounts cannot be the same.",
-                    senderDetail,
-                    receiverDetail
+                    senderAccountholderName,
+                    receiverAccountholderName
             );
         }
 
-        // ---------- Balance ----------
         if (sender.getBalance().compareTo(request.amount()) < 0) {
             return new AccountTransferResponse(
                     TransferStatus.FAILED,
-                    "INSUFFICIENT_BALANCE",
+                    INSUFFICIENT_BALANCE,
                     "Insufficient account balance.",
-                    senderDetail,
-                    receiverDetail
+                    senderAccountholderName,
+                    receiverAccountholderName
             );
         }
 
@@ -143,12 +135,13 @@ public class BankTransferService {
         if (!pinResponse.valid()) {
             return new AccountTransferResponse(
                     TransferStatus.FAILED,
-                    "INVALID_PIN",
+                    INVALID_PIN,
                     "Invalid transaction PIN.",
-                    senderDetail,
-                    receiverDetail
+                    senderAccountholderName,
+                    receiverAccountholderName
             );
         }
+
 
 
         sender.setBalance(sender.getBalance().subtract(request.amount()));
@@ -171,6 +164,7 @@ public class BankTransferService {
                 .build();
 
         accountEntityRepository.save(sender);
+
         accountEntityRepository.save(receiver);
 
         accountLedgerEntityRepository.saveAll(
@@ -178,13 +172,16 @@ public class BankTransferService {
         );
 
 
-        return new AccountTransferResponse(
+
+       return  new AccountTransferResponse(
                 TransferStatus.SUCCESS,
-                "TRANSFER_SUCCESS",
+                SUCCESS,
                 "Transfer completed successfully.",
-                senderDetail,
-                receiverDetail
+                senderAccountholderName,
+                receiverAccountholderName
         );
+
+
 
 
     }
