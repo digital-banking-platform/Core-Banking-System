@@ -9,5 +9,6 @@ public enum TransferErrorCode {
     INSUFFICIENT_BALANCE,
     INVALID_PIN,
     SAME_ACCOUNT,
-    SUCCESS
+    SUCCESS,
+    CONCURRENT_TRANSACTION
 }

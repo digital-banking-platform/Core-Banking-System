@@ -41,5 +41,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).
                 body(new ApiErrorResponse<>(HttpStatus.BAD_REQUEST.name(),  e.getMoneyResponse()));
     }
+    @ExceptionHandler(ConcurrentTransactionException.class)
+    public ResponseEntity<ApiErrorResponse<TransferMoneyResponse>> handleConcurrentTransactionException(ConcurrentTransactionException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiErrorResponse<>(HttpStatus.CONFLICT.name(),e.getResponse()));
+    }
 
 }

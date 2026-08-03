@@ -163,8 +163,11 @@ public class TransactionService {
             case INVALID_PIN ->
                     throw new InvalidPinException(moneyResponse);
 
-            case SAME_ACCOUNT ->
+            case SAME_ACCOUNT->
                     throw new BadRequestException(moneyResponse);
+
+            case CONCURRENT_TRANSACTION ->
+                throw new ConcurrentTransactionException(moneyResponse);
 
             default ->
                     throw new BadRequestException(moneyResponse);

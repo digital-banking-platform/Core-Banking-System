@@ -37,6 +37,9 @@ public class AccountsEntity {
     @Column(columnDefinition = "uuid", nullable = false, updatable = false)
     private UUID id;
 
+    @Version
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "profile_id",

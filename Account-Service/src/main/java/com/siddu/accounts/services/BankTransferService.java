@@ -12,6 +12,10 @@ import com.siddu.accounts.repository.AccountLedgerEntityRepository;
 import com.siddu.dto.pinvalidation.Request.PinValidationRequest;
 import com.siddu.dto.transfer.Request.AccountTransferRequest;
 import com.siddu.dto.transfer.Response.AccountTransferResponse;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +38,11 @@ public class BankTransferService {
     }
 
     @Transactional
+    @Retryable(
+            retryFor = ObjectOptimisticLockingFailureException.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 50)
+    )
     public AccountTransferResponse transfer(AccountTransferRequest request) {
 
         Optional<AccountsEntity> senderOptional =
@@ -163,10 +172,6 @@ public class BankTransferService {
                 .balanceAfter(receiver.getBalance())
                 .build();
 
-        accountEntityRepository.save(sender);
-
-        accountEntityRepository.save(receiver);
-
         accountLedgerEntityRepository.saveAll(
                 List.of(senderLedger, receiverLedger)
         );
@@ -184,5 +189,23 @@ public class BankTransferService {
 
 
 
+    }
+
+
+    @Recover
+    public AccountTransferResponse recover(
+            ObjectOptimisticLockingFailureException ex,
+            AccountTransferRequest request
+    ){
+        System.out.println("Recover method called");
+        return  new AccountTransferResponse(
+                TransferStatus.FAILED,
+                CONCURRENT_TRANSACTION,
+                "Another transaction modified this account. Please try again.",
+                null,
+                null
+
+
+        );
     }
 }
