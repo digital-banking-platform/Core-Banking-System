@@ -19,6 +19,10 @@ public interface AccountEntityRepository extends JpaRepository<AccountsEntity, U
     Page<AccountsEntity> findByAccountType(AccountType accountType, Pageable pageable);
 
     List<AccountsEntity> findByProfile(AccountProfileEntity profile);
+    boolean existsByAccountNumberAndProfileUserId(
+            String accountNumber,
+            UUID userId
+    );
 
 
 

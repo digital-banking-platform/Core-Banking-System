@@ -1,8 +1,8 @@
 package com.siddu.accounts.services;
 
+import com.siddu.Enums.TransferErrorCode;
 import com.siddu.Enums.TransferStatus;
 import com.siddu.accounts.Client.AuthClient;
-import com.siddu.accounts.Dto.Responses.PinValidationResponse;
 import com.siddu.accounts.Entity.AccountLedgerEntity;
 import com.siddu.accounts.Entity.AccountsEntity;
 import com.siddu.accounts.Enums.AccountStatus;
@@ -10,6 +10,7 @@ import com.siddu.accounts.Enums.LedgerEntryType;
 import com.siddu.accounts.repository.AccountEntityRepository;
 import com.siddu.accounts.repository.AccountLedgerEntityRepository;
 import com.siddu.dto.pinvalidation.Request.PinValidationRequest;
+import com.siddu.dto.pinvalidation.Response.PinValidationResponse;
 import com.siddu.dto.transfer.Request.AccountTransferRequest;
 import com.siddu.dto.transfer.Response.AccountTransferResponse;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -141,17 +142,16 @@ public class BankTransferService {
                         request.transactionPin()
                 ));
 
-        if (!pinResponse.valid()) {
-            return new AccountTransferResponse(
-                    TransferStatus.FAILED,
-                    INVALID_PIN,
-                    "Invalid transaction PIN.",
-                    senderAccountholderName,
-                    receiverAccountholderName
-            );
-        }
+      if(!pinResponse.status().equals(TransferErrorCode.VALID)){
 
+           return  new AccountTransferResponse(
+                  TransferStatus.FAILED,
+                  pinResponse.status(),
+                  pinResponse.message(),
+                  senderAccountholderName,
+                  receiverAccountholderName);
 
+      }
 
         sender.setBalance(sender.getBalance().subtract(request.amount()));
 

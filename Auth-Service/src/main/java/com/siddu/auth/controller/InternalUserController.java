@@ -19,7 +19,7 @@ public class InternalUserController {
 
     @PostMapping("/internal/pin/validate")
     public ResponseEntity<PinValidationResponse> validatePin(@RequestBody PinValidationRequest request){
-        return  ResponseEntity.ok(authService.validatepin(request));
+        return  ResponseEntity.ok(authService.validatePin(request));
 
     }
 

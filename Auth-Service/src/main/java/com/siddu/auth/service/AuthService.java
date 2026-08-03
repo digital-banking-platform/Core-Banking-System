@@ -1,5 +1,6 @@
 package com.siddu.auth.service;
 
+import com.siddu.Enums.TransferErrorCode;
 import com.siddu.auth.Enums.*;
 import com.siddu.auth.dto.Requests.LoginRequest;
 import com.siddu.auth.dto.Requests.RegisterRequest;
@@ -13,10 +14,13 @@ import com.siddu.auth.util.SecurityUtils;
 import com.siddu.auth.util.TokenHashUtil;
 import com.siddu.commonsecurity.Jwt.JwtValidator;
 import com.siddu.dto.pinvalidation.Request.PinValidationRequest;
+import com.siddu.dto.pinvalidation.Response.PinValidationResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -99,11 +103,6 @@ public class AuthService {
     public AuthResult loginUser(LoginRequest loginRequest,String deviceInfo,String ipAddress) {
         UserEntity user=userRepository.findByEmail(loginRequest.getEmail()).
                 orElseThrow(() -> new InvalidCreditionalException("invalid credentials"));
-
-//        if(!userRepository.existsByEmailAndIsEmailVerifiedTrue(loginRequest.getEmail())) {
-//            throw new InvalidCreditionalException("email not verified");
-//
-//        }
 
         if(!passwordEncoder.matches(loginRequest.getPassword(),user.getPasswordHash())) {
             throw new InvalidCreditionalException("invalid credentials");
@@ -192,14 +191,66 @@ public class AuthService {
          userSecurityRepository.save(userSecurity);
          return new SuccessResponse("Transaction PIN set successfully");
     }
-    public com.siddu.dto.pinvalidation.Response.PinValidationResponse validatepin(PinValidationRequest request){
-         String hash=userSecurityRepository.findTransactionPinHash(request.userId()).orElseThrow(
-                 () -> new ResourceNotFoundException("invalid user id")
-         );
-         boolean isvalid=passwordEncoder.matches(request.pin(),hash);
-         return new com.siddu.dto.pinvalidation.Response.PinValidationResponse(isvalid);
+    @Transactional
+    public PinValidationResponse validatePin(PinValidationRequest request) {
+
+        UserSecurityEntity security = userSecurityRepository
+                .findByUserId(request.userId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Invalid user id"));
+
+        Instant now = Instant.now();
+
+
+        if (security.getPinLockedUntil() != null) {
+
+            if (now.isBefore(security.getPinLockedUntil())) {
+                return new PinValidationResponse(
+                        TransferErrorCode.PIN_LOCKED,
+                        "Transaction PIN is temporarily locked."
+                );
+            }
+
+            security.setFailedPinAttempts(0);
+            security.setPinLockedUntil(null);
+        }
+
+        // Validate PIN
+        if (passwordEncoder.matches(request.pin(), security.getTransactionPinHash())) {
+
+            security.setFailedPinAttempts(0);
+            security.setPinLockedUntil(null);
+
+            userSecurityRepository.save(security);
+
+            return new PinValidationResponse(
+                    TransferErrorCode.VALID,
+                    "Transaction PIN validated successfully."
+            );
+        }
+
+
+        int attempts = security.getFailedPinAttempts() + 1;
+        security.setFailedPinAttempts(attempts);
+
+        if (attempts >= 5) {
+
+            security.setPinLockedUntil(now.plus(Duration.ofMinutes(15)));
+
+            userSecurityRepository.save(security);
+
+            return new PinValidationResponse(
+                    TransferErrorCode.PIN_LOCKED,
+                    "Too many failed attempts. PIN locked for 15 minutes."
+            );
+        }
+
+        userSecurityRepository.save(security);
+
+        return new PinValidationResponse(
+                TransferErrorCode.INVALID_PIN,
+                "Invalid transaction PIN."
+        );
     }
-
-
 
 }

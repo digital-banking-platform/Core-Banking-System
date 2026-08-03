@@ -1,5 +1,8 @@
 package com.siddu.dto.pinvalidation.Response;
 
+import com.siddu.Enums.TransferErrorCode;
+
 public record PinValidationResponse(
-        boolean valid
+        TransferErrorCode status,
+        String message
 ) { }

@@ -4,6 +4,7 @@ import com.siddu.transactionservices.Dto.Response.ApiErrorResponse;
 import com.siddu.transactionservices.Dto.Response.TransferMoneyResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -44,6 +45,10 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConcurrentTransactionException.class)
     public ResponseEntity<ApiErrorResponse<TransferMoneyResponse>> handleConcurrentTransactionException(ConcurrentTransactionException e) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiErrorResponse<>(HttpStatus.CONFLICT.name(),e.getResponse()));
+    }
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
     }
 
 }

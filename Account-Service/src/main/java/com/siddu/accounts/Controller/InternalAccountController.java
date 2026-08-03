@@ -3,8 +3,11 @@ package com.siddu.accounts.Controller;
 import com.siddu.accounts.Dto.Requests.VerifyAccountRequest;
 import com.siddu.accounts.Dto.Responses.BranchResponse;
 import com.siddu.accounts.Dto.Responses.VerifyAccountResponse;
+import com.siddu.accounts.services.AccountManagementService;
 import com.siddu.accounts.services.BankAccountService;
 import com.siddu.accounts.services.BankTransferService;
+import com.siddu.dto.account.Request.AccountIdentifier;
+import com.siddu.dto.account.Response.AccountIdentifierResponse;
 import com.siddu.dto.transfer.Request.AccountTransferRequest;
 import com.siddu.dto.transfer.Response.AccountTransferResponse;
 import jakarta.validation.Valid;
@@ -18,12 +21,15 @@ import org.springframework.web.bind.annotation.*;
 public class InternalAccountController {
     private final BankAccountService bankAccountService;
     private final BankTransferService bankTransferService;
+    private final AccountManagementService accountManagementService;
 
     @Autowired
     InternalAccountController(BankAccountService bankAccountService
-    , BankTransferService bankTransferService) {
+    , BankTransferService bankTransferService,
+      AccountManagementService accountManagementService) {
         this.bankAccountService = bankAccountService;
         this.bankTransferService = bankTransferService;
+        this.accountManagementService = accountManagementService;
     }
 
     @GetMapping("accounts/internals/branches")
@@ -43,6 +49,12 @@ public class InternalAccountController {
     @PostMapping("/accounts/internals/transfer")
     public ResponseEntity<AccountTransferResponse> transfer(@Valid @RequestBody AccountTransferRequest request) {
         return ResponseEntity.ok(bankTransferService.transfer(request));
+    }
+
+    @PostMapping("/accounts/internals/check-ownership")
+    public ResponseEntity<AccountIdentifierResponse> checkOwnership(@Valid @RequestBody AccountIdentifier request) {
+        return ResponseEntity.ok(accountManagementService.checkownerShip(request));
+
     }
 
 

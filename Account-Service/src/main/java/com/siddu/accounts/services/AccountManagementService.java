@@ -1,5 +1,6 @@
 package com.siddu.accounts.services;
 
+import com.siddu.Enums.CheckOwnerShip;
 import com.siddu.accounts.Dto.Requests.CreateBranchRequest;
 import com.siddu.accounts.Dto.Requests.ReKycRequest;
 import com.siddu.accounts.Dto.Responses.*;
@@ -15,6 +16,8 @@ import com.siddu.accounts.Utils.IfscGenerator;
 import com.siddu.accounts.repository.AccountEntityRepository;
 import com.siddu.accounts.repository.AccountProfileEntityRepository;
 import com.siddu.accounts.repository.BranchEntityRepository;
+import com.siddu.dto.account.Request.AccountIdentifier;
+import com.siddu.dto.account.Response.AccountIdentifierResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -173,5 +176,18 @@ public class AccountManagementService {
                 profile.getKycStatus(),
                 profile.getUpdatedAt()
         );
+    }
+
+
+    public AccountIdentifierResponse checkownerShip(AccountIdentifier request){
+
+        if(!accountEntityRepository.existsByAccountNumberAndProfileUserId(
+                request.AccountNumber(),
+                request.userId())){
+            return new AccountIdentifierResponse(CheckOwnerShip.INVALID_OWNER);
+        }
+
+        return new AccountIdentifierResponse(CheckOwnerShip.VALID_OWNER);
+
     }
 }

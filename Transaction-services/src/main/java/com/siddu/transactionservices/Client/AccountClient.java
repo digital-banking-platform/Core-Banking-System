@@ -1,5 +1,7 @@
 package com.siddu.transactionservices.Client;
 
+import com.siddu.dto.account.Request.AccountIdentifier;
+import com.siddu.dto.account.Response.AccountIdentifierResponse;
 import com.siddu.dto.transfer.Request.AccountTransferRequest;
 import com.siddu.dto.transfer.Response.AccountTransferResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -17,6 +19,8 @@ public interface AccountClient {
             @RequestBody AccountTransferRequest request
     );
 
+    @PostMapping("/accounts/internals/check-ownership")
+    AccountIdentifierResponse checkOwnership(@RequestBody AccountIdentifier accountIdentifier);
 
 
 }

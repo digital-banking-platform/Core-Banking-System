@@ -1,6 +1,7 @@
 package com.siddu.accounts.services;
 
 
+import com.siddu.Enums.TransferErrorCode;
 import com.siddu.accounts.Client.AuthClient;
 import com.siddu.accounts.Dto.Requests.CheckBalanceRequest;
 import com.siddu.accounts.Dto.Requests.CreateBankAccountRequest;
@@ -17,6 +18,7 @@ import com.siddu.accounts.Utils.SecurityUtils;
 import com.siddu.accounts.repository.AccountEntityRepository;
 import com.siddu.accounts.repository.AccountProfileEntityRepository;
 import com.siddu.accounts.repository.BranchEntityRepository;
+import com.siddu.dto.pinvalidation.Response.PinValidationResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -134,9 +136,11 @@ public class BankAccountService {
         PinValidationResponse response=authClient.validatePin(new
                 PinValidationRequest(SecurityUtils.getCurrentUserId(),
                 request.getPin()));
-        if(!response.valid()){
-            throw new InvalidPinException("invalid pin");
+
+        if(!response.status().equals(TransferErrorCode.VALID)){
+            throw new AccessForbiddenException(response.message());
         }
+
 
         return new CheckBalanceResponse(
                 account.getAccountNumber(),
