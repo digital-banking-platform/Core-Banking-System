@@ -1,6 +1,6 @@
 package com.siddu.accounts.services;
 
-import com.siddu.Enums.TransferStatus;
+
 import com.siddu.accounts.Client.AuthClient;
 import com.siddu.accounts.Dto.Requests.CheckBalanceRequest;
 import com.siddu.accounts.Dto.Requests.CreateBankAccountRequest;
@@ -17,17 +17,12 @@ import com.siddu.accounts.Utils.SecurityUtils;
 import com.siddu.accounts.repository.AccountEntityRepository;
 import com.siddu.accounts.repository.AccountProfileEntityRepository;
 import com.siddu.accounts.repository.BranchEntityRepository;
-import com.siddu.dto.transfer.Request.AccountTransferRequest;
-import com.siddu.dto.transfer.Response.AccountTransferParty;
-import com.siddu.dto.transfer.Response.AccountTransferResponse;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.math.BigDecimal;
 import java.util.List;
