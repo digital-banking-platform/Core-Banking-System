@@ -18,6 +18,6 @@ public record TransferMoneyResponse(
         TransactionStatus status,
         String failureReason,
 
-        LocalDateTime transactionTime
+        LocalDateTime completedAt
 
 ) {}

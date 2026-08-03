@@ -90,6 +90,8 @@ public class BankTransferService {
         Optional<AccountsEntity> receiverOptional =
                 accountEntityRepository.findByAccountNumber(request.receiverAccountNumber());
 
+
+
         if (receiverOptional.isEmpty()) {
             return new AccountTransferResponse(
                     TransferStatus.FAILED,
@@ -153,6 +155,9 @@ public class BankTransferService {
 
       }
 
+
+
+
         sender.setBalance(sender.getBalance().subtract(request.amount()));
 
 
@@ -178,6 +183,8 @@ public class BankTransferService {
 
 
 
+
+
        return  new AccountTransferResponse(
                 TransferStatus.SUCCESS,
                 SUCCESS,
@@ -192,12 +199,12 @@ public class BankTransferService {
     }
 
 
+
     @Recover
     public AccountTransferResponse recover(
             ObjectOptimisticLockingFailureException ex,
             AccountTransferRequest request
     ){
-        System.out.println("Recover method called");
         return  new AccountTransferResponse(
                 TransferStatus.FAILED,
                 CONCURRENT_TRANSACTION,

@@ -1,7 +1,6 @@
 package com.siddu.transactionservices.Services;
 
 import com.siddu.Enums.CheckOwnerShip;
-import com.siddu.Enums.TransferErrorCode;
 import com.siddu.Enums.TransferStatus;
 import com.siddu.dto.account.Request.AccountIdentifier;
 import com.siddu.dto.account.Response.AccountIdentifierResponse;
@@ -14,13 +13,13 @@ import com.siddu.transactionservices.Dto.Response.AccountTransactionParty;
 import com.siddu.transactionservices.Dto.Response.TransferMoneyResponse;
 import com.siddu.transactionservices.Entity.TransactionEntity;
 import com.siddu.transactionservices.Entity.TransactionSnapshotEntity;
+import com.siddu.transactionservices.Enums.PendingReason;
 import com.siddu.transactionservices.Enums.TransactionStatus;
-import com.siddu.transactionservices.Enums.TransactionType;
 import com.siddu.transactionservices.Exceptions.*;
 import com.siddu.transactionservices.Repository.TransactionEntityRepository;
-import com.siddu.transactionservices.Repository.TransactionSnapshotEntityRepository;
 import com.siddu.transactionservices.Utils.SecurityUtils;
-import com.siddu.transactionservices.Utils.TransactionIdGenerator;
+import feign.FeignException;
+import feign.RetryableException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,29 +34,25 @@ import java.util.UUID;
 @Service
 public class TransactionService {
     private final TransactionEntityRepository transactionEntityRepository;
-    private final TransactionSnapshotEntityRepository transactionSnapshotEntityRepository;
     private final AccountClient accountClient;
+    private final PendingTransactionService pendingTransactionService;
+    private final FailedTransactionService failedTransactionService;
 
 
     public TransactionService(TransactionEntityRepository transactionEntityRepository,
-                              TransactionSnapshotEntityRepository transactionSnapshotEntityRepository,
-                              AccountClient accountClient) {
+                              AccountClient accountClient,
+                              PendingTransactionService pendingTransactionService,
+                              FailedTransactionService failedTransactionService) {
         this.transactionEntityRepository = transactionEntityRepository;
-        this.transactionSnapshotEntityRepository = transactionSnapshotEntityRepository;
         this.accountClient = accountClient;
+        this.pendingTransactionService = pendingTransactionService;
+        this.failedTransactionService = failedTransactionService;
 
     }
 
 
 
-    @Transactional(noRollbackFor = {
-            ResourceNotFoundException.class,
-            AccessForbiddenException.class,
-            AccountInactiveException.class,
-            InsufficientBalanceException.class,
-            InvalidPinException.class,
-            BadRequestException.class
-    })
+    @Transactional()
     public TransferMoneyResponse transferMoney(TransferMoneyRequest request) {
 
         UUID userId = SecurityUtils.getCurrentUserId();
@@ -65,14 +60,18 @@ public class TransactionService {
         Optional<TransactionEntity> ExistTransaction = transactionEntityRepository.findByIdempotencyKey(request.idempotencyKey());
         if(ExistTransaction.isPresent()) {
             TransactionEntity transaction = ExistTransaction.get();
+            String sourceaccountholdername=transaction.getStatus()==TransactionStatus.PENDING ?null:
+                    transaction.getSnapshot().getSourceAccountHolderName();
+            String destinationaccountholdername=transaction.getStatus()==TransactionStatus.PENDING ?null:
+                    transaction.getSnapshot().getDestinationAccountHolderName();
            return new TransferMoneyResponse(
                            transaction.getTransactionId(),
                            new AccountTransactionParty(
-                                   transaction.getSnapshot().getSourceAccountHolderName(),
+                                   sourceaccountholdername,
                                    transaction.getSourceAccountNumber()
                            ),
                            new AccountTransactionParty(
-                                   transaction.getSnapshot().getDestinationAccountHolderName(),
+                                   destinationaccountholdername,
                                    transaction.getDestinationAccountNumber()
                            ),
                            transaction.getAmount(),
@@ -84,31 +83,58 @@ public class TransactionService {
 
         }
 
-        TransactionEntity transaction = createPendingTransaction(request);
-
-        transactionEntityRepository.save(transaction);
-
+            TransactionEntity transaction = pendingTransactionService.createPendingTransaction(request);
+        AccountTransferResponse response;
 
 
+        try {
 
-        AccountTransferResponse response =
-                accountClient.transfer(
-                        new AccountTransferRequest(
-                                transaction.getId(),
-                                userId,
-                                request.senderAccountNumber(),
-                                request.receiverAccountNumber(),
-                                request.amount(),
-                                request.transactionPin()
-                        )
-                );
 
-        TransactionStatus status =response.status()==TransferStatus.FAILED ?
-                TransactionStatus.FAILED :TransactionStatus.SUCCESS;
+             response =
+                    accountClient.transfer(
+                            new AccountTransferRequest(
+                                    transaction.getId(),
+                                    userId,
+                                    request.senderAccountNumber(),
+                                    request.receiverAccountNumber(),
+                                    request.amount(),
+                                    request.transactionPin()
+                            )
+                    );
+        }
+        catch (RetryableException ex){
 
-        transaction.setStatus(status);
-        transaction.setFailureReason(status==TransactionStatus.FAILED ? response.message(): null);
-        transaction.setCompletedAt(LocalDateTime.now());
+            transaction.setPendingReason(
+                    PendingReason.ACCOUNT_SERVICE_UNAVAILABLE
+            );
+
+            transactionEntityRepository.save(transaction);
+
+            return pendingResponse(transaction);
+        }
+        catch (FeignException.InternalServerError |
+               FeignException.BadGateway |
+               FeignException.ServiceUnavailable |
+               FeignException.GatewayTimeout ex){
+
+            transaction.setPendingReason(
+                    PendingReason.UNKNOWN_OUTCOME
+            );
+
+            transactionEntityRepository.save(transaction);
+
+            return pendingResponse(transaction);
+        }
+        catch(FeignException ex){
+
+            transaction.setStatus(TransactionStatus.FAILED);
+            transaction.setFailureReason("ACCOUNT_SERVICE_ERROR");
+            transaction.setCompletedAt(LocalDateTime.now());
+
+            transactionEntityRepository.save(transaction);
+
+            throw ex;
+        }
 
 
         TransactionSnapshotEntity snapshot =
@@ -121,7 +147,17 @@ public class TransactionService {
                         .build();
         transaction.setSnapshot(snapshot);
 
-        TransferMoneyResponse moneyResponse=new TransferMoneyResponse(
+        if(response.status() == TransferStatus.FAILED){
+            failedTransactionService.handleFailedTransaction(response,transaction);
+
+        }
+        transaction.setStatus(TransactionStatus.SUCCESS);
+        transaction.setFailureReason(null);
+        transaction.setCompletedAt(LocalDateTime.now());
+        transaction.setSnapshot(snapshot);
+        transactionEntityRepository.save(transaction);
+
+       return new TransferMoneyResponse(
                 transaction.getTransactionId(),
                 new AccountTransactionParty(
                         transaction.getSnapshot().getSourceAccountHolderName(),
@@ -131,69 +167,28 @@ public class TransactionService {
                         transaction.getSnapshot().getDestinationAccountHolderName(),
                         transaction.getDestinationAccountNumber()
                 ),
-                        transaction.getAmount(),
-                        transaction.getStatus(),
-                        transaction.getFailureReason(),
-                        transaction.getCompletedAt());
+                transaction.getAmount(),
+                transaction.getStatus(),
+                transaction.getFailureReason(),
+                transaction.getCompletedAt());
 
 
-        if(response.status() == TransferStatus.FAILED){
-            handleFailedTransfer(response.errorCode(), moneyResponse);
+    }
 
-        }
-        return moneyResponse;
+    private TransferMoneyResponse pendingResponse(TransactionEntity transaction) {
+        return new TransferMoneyResponse(
+                transaction.getTransactionId(),
+                new AccountTransactionParty(null, transaction.getSourceAccountNumber()),
+                new AccountTransactionParty(null, transaction.getDestinationAccountNumber()),
+                transaction.getAmount(),
+                TransactionStatus.PENDING,
+                transaction.getFailureReason(),
+                null
+        );
 
     }
 
 
-    private void handleFailedTransfer(
-            TransferErrorCode code,
-            TransferMoneyResponse moneyResponse
-    ) {
-
-        switch (code) {
-
-            case SENDER_ACCOUNT_NOT_FOUND,
-                 RECEIVER_ACCOUNT_NOT_FOUND ->
-                    throw new ResourceNotFoundException(moneyResponse);
-
-            case ACCESS_DENIED ->
-                    throw new AccessForbiddenException(moneyResponse);
-
-            case SENDER_ACCOUNT_INACTIVE,
-                 RECEIVER_ACCOUNT_INACTIVE ->
-                    throw new AccountInactiveException(moneyResponse);
-
-            case INSUFFICIENT_BALANCE ->
-                    throw new InsufficientBalanceException(moneyResponse);
-
-            case INVALID_PIN ->
-                    throw new InvalidPinException(moneyResponse);
-
-            case SAME_ACCOUNT->
-                    throw new BadRequestException(moneyResponse);
-
-            case CONCURRENT_TRANSACTION ->
-                throw new ConcurrentTransactionException(moneyResponse);
-
-            default ->
-                    throw new BadRequestException(moneyResponse);
-        }
-    }
-
-
-    private TransactionEntity createPendingTransaction(TransferMoneyRequest request) {
-
-        return TransactionEntity.builder()
-                .idempotencyKey(request.idempotencyKey())
-                .transactionId(TransactionIdGenerator.generate())
-                .sourceAccountNumber(request.senderAccountNumber())
-                .destinationAccountNumber(request.receiverAccountNumber())
-                .transactionType(TransactionType.TRANSFER)
-                .status(TransactionStatus.PENDING)
-                .amount(request.amount())
-                .build();
-    }
 
     public Page<TransferMoneyResponse> getTransactionshistory(int page, int size, AccountNumberRequest request){
 
@@ -216,11 +211,13 @@ public class TransactionService {
                     new TransferMoneyResponse(
                             txn.getTransactionId(),
                             new AccountTransactionParty(
+                                    txn.getStatus()==TransactionStatus.PENDING ? null:
                                     txn.getSnapshot().getSourceAccountHolderName(),
                                     txn.getSourceAccountNumber()
                             ),
                             new AccountTransactionParty(
-                                    txn.getSnapshot().getDestinationAccountHolderName(),
+                                    txn.getStatus()==TransactionStatus.PENDING ? null :
+                                            txn.getSnapshot().getDestinationAccountHolderName(),
                                     txn.getDestinationAccountNumber()
                             ),
                             txn.getAmount(),

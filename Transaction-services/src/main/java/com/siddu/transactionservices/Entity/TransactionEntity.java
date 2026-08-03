@@ -2,6 +2,7 @@ package com.siddu.transactionservices.Entity;
 
 
 
+import com.siddu.transactionservices.Enums.PendingReason;
 import com.siddu.transactionservices.Enums.TransactionStatus;
 import com.siddu.transactionservices.Enums.TransactionType;
 import jakarta.persistence.*;
@@ -97,6 +98,10 @@ public class TransactionEntity {
 
     @Column(name = "failure_reason", length = 255)
     private String failureReason;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "pending_reason")
+    private PendingReason pendingReason;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
