@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 @RestController
 public class UserAccessController {
     private final UserAccessManagementService userAccessManagementService;
+    @Autowired
     public UserAccessController(UserAccessManagementService userAccessManagementService) {
         this.userAccessManagementService = userAccessManagementService;
     }
