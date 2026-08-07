@@ -2,7 +2,6 @@ package com.siddu.auth.controller;
 
 import com.siddu.auth.dto.Requests.LoginRequest;
 import com.siddu.auth.dto.Requests.RegisterRequest;
-import com.siddu.auth.dto.Requests.SetPinRequest;
 import com.siddu.auth.dto.Response.*;
 import com.siddu.auth.service.AuthService;
 import com.siddu.commonsecurity.Jwt.JwtValidator;
@@ -77,9 +76,5 @@ public class AuthController {
     @PutMapping("/Auth/change-password")
     public void changePassword(){
 
-    }
-    @PostMapping("/Auth/transactionpin/set")
-    public ResponseEntity<SuccessResponse> setpin(@RequestBody SetPinRequest request){
-        return ResponseEntity.ok(authService.setpin(request));
     }
 }

@@ -1,16 +1,15 @@
 package com.siddu.transactionservices.Exceptions;
 
-import com.siddu.transactionservices.Dto.Response.TransferMoneyResponse;
+import com.siddu.dto.transfer.Response.ErrorResponse;
 import lombok.Getter;
 
 @Getter
 public class ConcurrentTransactionException extends RuntimeException {
 
-    private final TransferMoneyResponse response;
+    private final ErrorResponse errorResponse;
 
-    public ConcurrentTransactionException(TransferMoneyResponse response) {
-
-        this.response = response;
+    public ConcurrentTransactionException(ErrorResponse errorResponse) {
+        this.errorResponse = errorResponse;
     }
 
 

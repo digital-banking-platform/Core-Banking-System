@@ -1,13 +1,15 @@
 package com.siddu.transactionservices.Exceptions;
 
+import com.siddu.dto.transfer.Response.ErrorResponse;
 import com.siddu.transactionservices.Dto.Response.TransferMoneyResponse;
 import lombok.Getter;
 
 @Getter
 public class InvalidPinException extends RuntimeException {
-    private final TransferMoneyResponse moneyResponse;
+    private final ErrorResponse errorResponse;
 
-    public InvalidPinException(TransferMoneyResponse moneyResponse) {
-        this.moneyResponse = moneyResponse;
+    public InvalidPinException(ErrorResponse  errorResponse) {
+
+       this.errorResponse = errorResponse;
     }
 }

@@ -75,6 +75,9 @@ public class AccountsEntity {
     @Column(nullable = false, precision = 18, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
 
+    @Column(name = "transaction_pin_hash", nullable = false)
+    private String transactionPinHash;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;

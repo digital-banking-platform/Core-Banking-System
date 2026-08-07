@@ -48,10 +48,7 @@ public class UserEntity {
     @Column(name = "last_login_at")
     private Instant lastLoginAt;
 
-    // Relationships
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserRoleEntity> roles = new HashSet<>();
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private UserSecurityEntity security;
 }

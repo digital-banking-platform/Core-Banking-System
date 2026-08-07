@@ -1,9 +1,6 @@
 package com.siddu.accounts.Controller;
 
-import com.siddu.accounts.Dto.Requests.AddressUpdateRequest;
-import com.siddu.accounts.Dto.Requests.CheckBalanceRequest;
-import com.siddu.accounts.Dto.Requests.CreateBankAccountRequest;
-import com.siddu.accounts.Dto.Requests.UpdateProfileNameRequest;
+import com.siddu.accounts.Dto.Requests.*;
 import com.siddu.accounts.Dto.Responses.*;
 import com.siddu.accounts.Utils.SecurityUtils;
 import com.siddu.accounts.services.BankAccountService;
@@ -28,10 +25,14 @@ public class AccountController {
         this.profilemanagementService = profilemanagementService;
     }
 
+    @PostMapping("accounts/create-bank-Profile")
+    public ResponseEntity<ProfileResponse> createbankprofile(@RequestBody CreateProfile request) {
+        return ResponseEntity.ok(profilemanagementService.createProfile(request));
+    }
+
     @PostMapping("accounts/create-bank-account")
     public ResponseEntity<ApiResponse<BankAccountResponse>> createBankAccount(@Valid @RequestBody CreateBankAccountRequest Request) {
-        UUID userId= SecurityUtils.getCurrentUserId();
-        return ResponseEntity.ok(bankAccountService.createBankAccount(Request,userId));
+        return ResponseEntity.ok(bankAccountService.createBankAccount(Request));
 
     }
 

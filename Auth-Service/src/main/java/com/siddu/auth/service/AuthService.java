@@ -1,26 +1,20 @@
 package com.siddu.auth.service;
 
-import com.siddu.Enums.TransferErrorCode;
 import com.siddu.auth.Enums.*;
 import com.siddu.auth.dto.Requests.LoginRequest;
 import com.siddu.auth.dto.Requests.RegisterRequest;
-import com.siddu.auth.dto.Requests.SetPinRequest;
 import com.siddu.auth.dto.Response.*;
 import com.siddu.auth.entity.*;
 import com.siddu.auth.exception.*;
 import com.siddu.auth.repository.*;
 import com.siddu.auth.security.JwtService;
-import com.siddu.auth.util.SecurityUtils;
 import com.siddu.auth.util.TokenHashUtil;
 import com.siddu.commonsecurity.Jwt.JwtValidator;
-import com.siddu.dto.pinvalidation.Request.PinValidationRequest;
-import com.siddu.dto.pinvalidation.Response.PinValidationResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -36,11 +30,10 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JwtValidator jwtValidator;
-    private final UserSecurityRepository userSecurityRepository;
      @Autowired
     public AuthService(UserRepository userRepository, UserRoleRepository userRoleRepository, RoleRepository roleRepository,
                        SessionRepository sessionRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
-                       JwtValidator jwtValidator, UserSecurityRepository userSecurityRepository
+                       JwtValidator jwtValidator
      ) {
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
@@ -49,7 +42,6 @@ public class AuthService {
          this.passwordEncoder = passwordEncoder;
          this.jwtService = jwtService;
          this.jwtValidator = jwtValidator;
-         this.userSecurityRepository = userSecurityRepository;
 
     }
 
@@ -169,88 +161,6 @@ public class AuthService {
 
 
         return new TokenResponse(newAccessToken,newRefreshToken);
-    }
-
-    public SuccessResponse setpin(SetPinRequest request) {
-         UserEntity user=userRepository.findById(SecurityUtils.getCurrentUserId()).orElseThrow(
-                 () -> new ResourceNotFoundException("invalid user id")
-         );
-         if(!user.getStatus().equals(UserStatus.ACTIVE)){
-             throw new InvalidUserStateException("user is not active");
-         }
-         if(!request.getPin().equals(request.getPinConfirm())){
-             throw  new ResourceNotMatchedException("New PIN and Confirm PIN do not match");
-         }
-         if(userSecurityRepository.existsByUser(user)){
-             throw new ResourceExistException("Transaction PIN is already set");
-         }
-         UserSecurityEntity userSecurity=UserSecurityEntity.builder()
-                 .user(user)
-                 .transactionPinHash(passwordEncoder.encode(request.getPin()))
-                 .build();
-         userSecurityRepository.save(userSecurity);
-         return new SuccessResponse("Transaction PIN set successfully");
-    }
-    @Transactional
-    public PinValidationResponse validatePin(PinValidationRequest request) {
-
-        UserSecurityEntity security = userSecurityRepository
-                .findByUserId(request.userId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Invalid user id"));
-
-        Instant now = Instant.now();
-
-
-        if (security.getPinLockedUntil() != null) {
-
-            if (now.isBefore(security.getPinLockedUntil())) {
-                return new PinValidationResponse(
-                        TransferErrorCode.PIN_LOCKED,
-                        "Transaction PIN is temporarily locked."
-                );
-            }
-
-            security.setFailedPinAttempts(0);
-            security.setPinLockedUntil(null);
-        }
-
-        // Validate PIN
-        if (passwordEncoder.matches(request.pin(), security.getTransactionPinHash())) {
-
-            security.setFailedPinAttempts(0);
-            security.setPinLockedUntil(null);
-
-            userSecurityRepository.save(security);
-
-            return new PinValidationResponse(
-                    TransferErrorCode.VALID,
-                    "Transaction PIN validated successfully."
-            );
-        }
-
-
-        int attempts = security.getFailedPinAttempts() + 1;
-        security.setFailedPinAttempts(attempts);
-
-        if (attempts >= 5) {
-
-            security.setPinLockedUntil(now.plus(Duration.ofMinutes(15)));
-
-            userSecurityRepository.save(security);
-
-            return new PinValidationResponse(
-                    TransferErrorCode.PIN_LOCKED,
-                    "Too many failed attempts. PIN locked for 15 minutes."
-            );
-        }
-
-        userSecurityRepository.save(security);
-
-        return new PinValidationResponse(
-                TransferErrorCode.INVALID_PIN,
-                "Invalid transaction PIN."
-        );
     }
 
 }

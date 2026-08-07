@@ -12,4 +12,5 @@ public interface TransactionEntityRepository extends JpaRepository<TransactionEn
 
     Optional<TransactionEntity> findByIdempotencyKey(UUID idempotencyKey);
     Page<TransactionEntity> findBysourceAccountNumber(String accountNumber, Pageable pageable);
+    
 }

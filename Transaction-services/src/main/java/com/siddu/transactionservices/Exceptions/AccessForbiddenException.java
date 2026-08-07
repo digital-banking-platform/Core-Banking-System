@@ -1,15 +1,16 @@
 package com.siddu.transactionservices.Exceptions;
 
-import com.siddu.transactionservices.Dto.Response.TransferMoneyResponse;
+import com.siddu.dto.transfer.Response.ErrorResponse;
 import lombok.Getter;
 
 @Getter
 public class AccessForbiddenException extends RuntimeException {
 
-    private final TransferMoneyResponse moneyResponse;
+    private final ErrorResponse errorResponse;
 
-    public AccessForbiddenException(TransferMoneyResponse moneyResponse) {
-        this.moneyResponse = moneyResponse;
+    public AccessForbiddenException(ErrorResponse errorResponse)
+    {
+       this.errorResponse = errorResponse;
     }
 
 

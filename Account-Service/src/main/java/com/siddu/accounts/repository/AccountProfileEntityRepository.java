@@ -15,6 +15,7 @@ public interface AccountProfileEntityRepository extends JpaRepository<AccountPro
     boolean existsByAadhaarNumber(String AadhaarNumber);
     Page<AccountProfileEntity> findByKycStatus(KycStatus kycStatus, Pageable pageable);
     Optional<AccountProfileEntity> findByAadhaarNumber(String AadhaarNumber);
+    boolean existsByUserId(UUID UserId);
 
 
 

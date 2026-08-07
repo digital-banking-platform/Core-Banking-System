@@ -9,7 +9,9 @@ import com.siddu.accounts.services.BankTransferService;
 import com.siddu.dto.account.Request.AccountIdentifier;
 import com.siddu.dto.account.Response.AccountIdentifierResponse;
 import com.siddu.dto.transfer.Request.AccountTransferRequest;
+import com.siddu.dto.transfer.Request.TransactionValidationRequest;
 import com.siddu.dto.transfer.Response.AccountTransferResponse;
+import com.siddu.dto.transfer.Response.TransactionValidationResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -44,6 +46,11 @@ public class InternalAccountController {
     @PostMapping("/accounts/internals/verify-sender")
     public ResponseEntity<VerifyAccountResponse> verifysenderAccount(@Valid @RequestBody VerifyAccountRequest request) {
         return ResponseEntity.ok(bankAccountService.verifysenderaccount(request));
+    }
+
+    @PostMapping("/accounts/internals/transaction-validation")
+    public ResponseEntity<TransactionValidationResponse> transactionValidation(@Valid @RequestBody TransactionValidationRequest request) {
+        return ResponseEntity.ok(bankTransferService.TransactionValidation(request));
     }
 
     @PostMapping("/accounts/internals/transfer")

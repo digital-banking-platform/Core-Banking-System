@@ -10,10 +10,6 @@ public record AccountTransferResponse(
 
         TransferErrorCode errorCode,
 
-        String message,
-
-        String  senderAccountHolderName,
-
-        String receiverAccountHolderName
+        String message
 
 ) {}

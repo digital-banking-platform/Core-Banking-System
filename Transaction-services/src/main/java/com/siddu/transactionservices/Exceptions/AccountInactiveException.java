@@ -1,13 +1,12 @@
 package com.siddu.transactionservices.Exceptions;
 
-import com.siddu.transactionservices.Dto.Response.TransferMoneyResponse;
+import com.siddu.dto.transfer.Response.ErrorResponse;
 import lombok.Getter;
 
 @Getter
 public class AccountInactiveException extends RuntimeException {
-    private final TransferMoneyResponse moneyResponse;
-    public AccountInactiveException(TransferMoneyResponse moneyResponse) {
-
-        this.moneyResponse = moneyResponse;
+    private final ErrorResponse errorResponse;
+    public AccountInactiveException(ErrorResponse errorResponse) {
+        this.errorResponse = errorResponse;
     }
 }

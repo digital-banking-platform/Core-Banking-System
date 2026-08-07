@@ -1,22 +1,22 @@
 package com.siddu.accounts.services;
 
-import com.siddu.Enums.TransferErrorCode;
 import com.siddu.Enums.TransferStatus;
-import com.siddu.accounts.Client.AuthClient;
+import com.siddu.Enums.ValidationStatus;
 import com.siddu.accounts.Entity.AccountLedgerEntity;
 import com.siddu.accounts.Entity.AccountsEntity;
 import com.siddu.accounts.Enums.AccountStatus;
 import com.siddu.accounts.Enums.LedgerEntryType;
 import com.siddu.accounts.repository.AccountEntityRepository;
 import com.siddu.accounts.repository.AccountLedgerEntityRepository;
-import com.siddu.dto.pinvalidation.Request.PinValidationRequest;
-import com.siddu.dto.pinvalidation.Response.PinValidationResponse;
 import com.siddu.dto.transfer.Request.AccountTransferRequest;
+import com.siddu.dto.transfer.Request.TransactionValidationRequest;
 import com.siddu.dto.transfer.Response.AccountTransferResponse;
+import com.siddu.dto.transfer.Response.TransactionValidationResponse;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,153 +28,72 @@ import static com.siddu.Enums.TransferErrorCode.*;
 @Service
 public class BankTransferService {
     private final AccountEntityRepository accountEntityRepository;
-    private final AuthClient authClient;
     private final AccountLedgerEntityRepository accountLedgerEntityRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public BankTransferService(AccountEntityRepository accountEntityRepository, AuthClient authClient
-            , AccountLedgerEntityRepository accountLedgerEntityRepository) {
+    public BankTransferService(AccountEntityRepository accountEntityRepository
+            , AccountLedgerEntityRepository accountLedgerEntityRepository,PasswordEncoder passwordEncoder) {
         this.accountEntityRepository = accountEntityRepository;
-        this.authClient = authClient;
         this.accountLedgerEntityRepository = accountLedgerEntityRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
     @Retryable(
             retryFor = ObjectOptimisticLockingFailureException.class,
-            maxAttempts = 3,
             backoff = @Backoff(delay = 50)
     )
     public AccountTransferResponse transfer(AccountTransferRequest request) {
+        System.out.println("Sender : " + request.senderAccountNumber());
+        System.out.println("Receiver : " + request.receiverAccountNumber());
+        System.out.println("Txn Pin : " + request.transactionPin());
 
-        Optional<AccountsEntity> senderOptional =
-                accountEntityRepository.findByAccountNumber(request.senderAccountNumber());
+        AccountsEntity senderAccount =
+                accountEntityRepository.findByAccountNumber(request.senderAccountNumber()).orElseThrow();
 
-        if (senderOptional.isEmpty()) {
-            return new AccountTransferResponse(
+
+
+        AccountsEntity receiverAccount =
+                accountEntityRepository.findByAccountNumber(request.receiverAccountNumber()).orElseThrow();
+
+        if(!passwordEncoder.matches(request.transactionPin(),senderAccount.getTransactionPinHash())){
+            return  new AccountTransferResponse(
                     TransferStatus.FAILED,
-                    SENDER_ACCOUNT_NOT_FOUND,
-                    "Sender account does not exist.",
-                    null,
-                    null
+                   INVALID_PIN,
+                   "Invalid Pin"
             );
-        }
-
-        AccountsEntity sender = senderOptional.get();
-
-        String senderAccountholderName=sender.getProfile().getAccountHolderName();
 
 
-
-        if (!sender.getProfile().getUserId().equals(request.userId())) {
-            return new AccountTransferResponse(
-                    TransferStatus.FAILED,
-                    ACCESS_DENIED,
-                    "You are not authorized to access this account.",
-                    senderAccountholderName,
-                    null
-            );
         }
 
 
-        if (sender.getStatus() != AccountStatus.ACTIVE) {
-            return new AccountTransferResponse(
-                    TransferStatus.FAILED,
-                    SENDER_ACCOUNT_INACTIVE,
-                    "Sender account is not active.",
-                    senderAccountholderName,
-                    null
-            );
-        }
-
-
-        Optional<AccountsEntity> receiverOptional =
-                accountEntityRepository.findByAccountNumber(request.receiverAccountNumber());
-
-
-
-        if (receiverOptional.isEmpty()) {
-            return new AccountTransferResponse(
-                    TransferStatus.FAILED,
-                    RECEIVER_ACCOUNT_NOT_FOUND,
-                    "Receiver account does not exist.",
-                    senderAccountholderName,
-                    null
-            );
-        }
-
-        AccountsEntity receiver = receiverOptional.get();
-        String receiverAccountholderName=receiver.getProfile().getAccountHolderName();
-
-
-        if (receiver.getStatus() != AccountStatus.ACTIVE) {
-            return new AccountTransferResponse(
-                    TransferStatus.FAILED,
-                    RECEIVER_ACCOUNT_INACTIVE,
-                    "Receiver account is not active.",
-                    senderAccountholderName,
-                    receiverAccountholderName
-            );
-        }
-
-
-        if (sender.getId().equals(receiver.getId())) {
-            return new AccountTransferResponse(
-                    TransferStatus.FAILED,
-                    SAME_ACCOUNT,
-                    "Sender and receiver accounts cannot be the same.",
-                    senderAccountholderName,
-                    receiverAccountholderName
-            );
-        }
-
-        if (sender.getBalance().compareTo(request.amount()) < 0) {
+        if (senderAccount.getBalance().compareTo(request.amount()) < 0) {
             return new AccountTransferResponse(
                     TransferStatus.FAILED,
                     INSUFFICIENT_BALANCE,
-                    "Insufficient account balance.",
-                    senderAccountholderName,
-                    receiverAccountholderName
+                    "Insufficient account balance."
             );
         }
 
 
-        PinValidationResponse pinResponse =
-                authClient.validatePin(new PinValidationRequest(
-                        request.userId(),
-                        request.transactionPin()
-                ));
+        senderAccount.setBalance(senderAccount.getBalance().subtract(request.amount()));
 
-      if(!pinResponse.status().equals(TransferErrorCode.VALID)){
+        receiverAccount.setBalance(receiverAccount.getBalance().add(request.amount()));
 
-           return  new AccountTransferResponse(
-                  TransferStatus.FAILED,
-                  pinResponse.status(),
-                  pinResponse.message(),
-                  senderAccountholderName,
-                  receiverAccountholderName);
-
-      }
-
-
-
-
-        sender.setBalance(sender.getBalance().subtract(request.amount()));
-
-
-        receiver.setBalance(receiver.getBalance().add(request.amount()));
         AccountLedgerEntity senderLedger = AccountLedgerEntity.builder()
-                .accountId(sender.getId())
+                .accountId(senderAccount.getId())
                 .transactionId(request.transactionId())
                 .entryType(LedgerEntryType.DEBIT)
                 .amount(request.amount())
-                .balanceAfter(sender.getBalance())
+                .balanceAfter(senderAccount.getBalance())
                 .build();
+
         AccountLedgerEntity receiverLedger = AccountLedgerEntity.builder()
-                .accountId(receiver.getId())
+                .accountId(receiverAccount.getId())
                 .transactionId(request.transactionId())
                 .entryType(LedgerEntryType.CREDIT)
                 .amount(request.amount())
-                .balanceAfter(receiver.getBalance())
+                .balanceAfter(receiverAccount.getBalance())
                 .build();
 
         accountLedgerEntityRepository.saveAll(
@@ -182,15 +101,10 @@ public class BankTransferService {
         );
 
 
-
-
-
        return  new AccountTransferResponse(
                 TransferStatus.SUCCESS,
                 SUCCESS,
-                "Transfer completed successfully.",
-                senderAccountholderName,
-                receiverAccountholderName
+                "Transfer completed successfully."
         );
 
 
@@ -208,11 +122,89 @@ public class BankTransferService {
         return  new AccountTransferResponse(
                 TransferStatus.FAILED,
                 CONCURRENT_TRANSACTION,
-                "Another transaction modified this account. Please try again.",
-                null,
-                null
-
+                "Another transaction modified this account. Please try again."
 
         );
+    }
+
+
+    public TransactionValidationResponse TransactionValidation(TransactionValidationRequest request) {
+        Optional<AccountsEntity> sender=
+                accountEntityRepository.findByAccountNumber(request.senderAccountNumber());
+        if(sender.isEmpty()) {
+            return new TransactionValidationResponse(
+                    ValidationStatus.Failed,
+                    SENDER_ACCOUNT_NOT_FOUND,
+                    "sender account not found",
+                    null,
+                    null
+            );
+        }
+
+            AccountsEntity senderAccount = sender.get();
+            if (!senderAccount.getProfile().getUserId().equals(request.userId())) {
+                return new TransactionValidationResponse(
+                        ValidationStatus.Failed,
+                        ACCESS_DENIED,
+                        "You are not authorized to access this account.",
+                        null,
+                        null
+                );
+
+            }
+
+            if (senderAccount.getStatus() != AccountStatus.ACTIVE) {
+                return new TransactionValidationResponse(
+                        ValidationStatus.Failed,
+                        SENDER_ACCOUNT_INACTIVE,
+                        "Sender account is not active.",
+                        null,
+                        null
+                );
+            }
+
+            Optional<AccountsEntity> receiver =
+                    accountEntityRepository.findByAccountNumber(request.receiverAccountNumber());
+
+            if (receiver.isEmpty()) {
+                return new TransactionValidationResponse(
+                        ValidationStatus.Failed,
+                        RECEIVER_ACCOUNT_NOT_FOUND,
+                        "Receiver account not found.",
+                        null,
+                        null
+                );
+            }
+
+            AccountsEntity receiverAccount = receiver.get();
+
+        if (receiverAccount.getStatus() != AccountStatus.ACTIVE) {
+            return new TransactionValidationResponse(
+                    ValidationStatus.Failed,
+                    RECEIVER_ACCOUNT_INACTIVE,
+                    "Receiver account is not active.",
+                    null,
+                    null
+            );
+        }
+        if (senderAccount.getId().equals(receiverAccount.getId())) {
+            return new TransactionValidationResponse(
+                    ValidationStatus.Failed,
+                    SAME_ACCOUNT,
+                    "Sender and receiver accounts cannot be the same.",
+                    null,
+                    null
+                    );
+        }
+        System.out.println("validated successfully");
+
+        return new TransactionValidationResponse(
+                ValidationStatus.Success,
+                SUCCESS,
+                "verified successfully",
+                senderAccount.getProfile().getAccountHolderName(),
+                receiverAccount.getProfile().getAccountHolderName()
+        );
+
     }
 }

@@ -1,24 +1,23 @@
 package com.siddu.accounts.services;
 
 
-import com.siddu.Enums.TransferErrorCode;
-import com.siddu.accounts.Client.AuthClient;
+
 import com.siddu.accounts.Dto.Requests.CheckBalanceRequest;
 import com.siddu.accounts.Dto.Requests.CreateBankAccountRequest;
-import com.siddu.dto.pinvalidation.Request.PinValidationRequest;
 import com.siddu.accounts.Dto.Requests.VerifyAccountRequest;
 import com.siddu.accounts.Dto.Responses.*;
 import com.siddu.accounts.Entity.AccountProfileEntity;
 import com.siddu.accounts.Entity.AccountsEntity;
 import com.siddu.accounts.Entity.BranchEntity;
 import com.siddu.accounts.Enums.AccountStatus;
+import com.siddu.accounts.Enums.KycStatus;
 import com.siddu.accounts.Exceptions.*;
 import com.siddu.accounts.Utils.AccountNumberGenerator;
 import com.siddu.accounts.Utils.SecurityUtils;
 import com.siddu.accounts.repository.AccountEntityRepository;
 import com.siddu.accounts.repository.AccountProfileEntityRepository;
 import com.siddu.accounts.repository.BranchEntityRepository;
-import com.siddu.dto.pinvalidation.Response.PinValidationResponse;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
@@ -28,42 +27,35 @@ import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 @Service
 public class BankAccountService {
     private final AccountEntityRepository accountEntityRepository;
     private final AccountProfileEntityRepository accountProfileEntityRepository;
     private final BranchEntityRepository branchEntityRepository;
-    private final AuthClient authClient;
-    private final ProfilemanagementService profilemanagementService;
+    private final PasswordEncoder passwordEncoder;
 
     public BankAccountService(AccountEntityRepository accountEntityRepository
-            , AccountProfileEntityRepository accountProfileEntityRepository, BranchEntityRepository branchEntityRepository
-    , AuthClient authClient, ProfilemanagementService profilemanagementService) {
+            , AccountProfileEntityRepository accountProfileEntityRepository,
+                              BranchEntityRepository branchEntityRepository,
+                              PasswordEncoder passwordEncoder
+   ) {
         this.accountEntityRepository = accountEntityRepository;
         this.accountProfileEntityRepository = accountProfileEntityRepository;
         this.branchEntityRepository = branchEntityRepository;
-        this.authClient = authClient;
-        this.profilemanagementService = profilemanagementService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
-    public ApiResponse<BankAccountResponse> createBankAccount(CreateBankAccountRequest request, UUID userId) {
+    public ApiResponse<BankAccountResponse> createBankAccount(CreateBankAccountRequest request) {
 
-        AccountProfileEntity profile;
+        AccountProfileEntity profile =accountProfileEntityRepository.findByUserId(SecurityUtils.getCurrentUserId())
+                .orElseThrow( () ->
+                new ResourceNotFoundException( "Please complete your profile before creating an account."));
 
-        Optional<AccountProfileEntity> existingProfile = accountProfileEntityRepository.findByUserId(userId);
-        if (existingProfile.isPresent()) {
-            profile = existingProfile.get();
-            profilemanagementService.validateExistingProfile(profile, request);
-            if (accountEntityRepository.existsByProfileUserIdAndAccountType(userId, request.getAccountType())) {
-                throw new AccountAlreadyExistsException("Bank Account already exists with AccountType " + request.getAccountType());
-            }
-
-        } else
-        {
-            profile = profilemanagementService.createProfile(request, userId);
+        if(!profile.getKycStatus().equals(KycStatus.VERIFIED)){
+            throw new BadRequestException( "KYC is not verified. Please visit your nearest" +
+                    " bank branch to complete verification.");
         }
 
         String AccountNumber;
@@ -74,10 +66,10 @@ public class BankAccountService {
         BranchEntity branch = branchEntityRepository.findByIfscCode(request.getIfscCode()).orElseThrow(
                 () -> new ResourceNotFoundException("branch not found")
         );
+
         if(!branch.getActive()){
             throw new ResourceNotFoundException("branch is not active");
         }
-
 
         AccountsEntity account = AccountsEntity.builder()
                 .profile(profile)
@@ -85,8 +77,10 @@ public class BankAccountService {
                 .accountType(request.getAccountType())
                 .branch(branch)
                 .status(AccountStatus.ACTIVE)
+                .transactionPinHash(passwordEncoder.encode(request.getPin()))
                 .balance(BigDecimal.valueOf(500))
                 .build();
+
         account = accountEntityRepository.save(account);
 
         BankAccountResponse response = new BankAccountResponse(account.getAccountNumber(), account.getAccountType()
@@ -133,13 +127,7 @@ public class BankAccountService {
             throw new AccountInactiveException("account is not active");
         }
 
-        PinValidationResponse response=authClient.validatePin(new
-                PinValidationRequest(SecurityUtils.getCurrentUserId(),
-                request.getPin()));
 
-        if(!response.status().equals(TransferErrorCode.VALID)){
-            throw new AccessForbiddenException(response.message());
-        }
 
 
         return new CheckBalanceResponse(
@@ -186,9 +174,6 @@ public class BankAccountService {
                 account.getAccountNumber(),
                 account.getStatus());
     }
-
-
-
 
 
 }

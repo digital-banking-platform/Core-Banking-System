@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 
 
@@ -27,7 +26,7 @@ public class RoleEntity {
 
         @Enumerated(EnumType.STRING)
         @Column(nullable = false, updatable = false)
-        private RoleName name;  // fixed master data
+        private RoleName name;
 
         @OneToMany(mappedBy = "role", fetch = FetchType.LAZY)
         @Builder.Default

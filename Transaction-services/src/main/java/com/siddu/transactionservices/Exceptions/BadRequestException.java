@@ -1,12 +1,13 @@
 package com.siddu.transactionservices.Exceptions;
 
-import com.siddu.transactionservices.Dto.Response.TransferMoneyResponse;
+import com.siddu.dto.transfer.Response.ErrorResponse;
 import lombok.Getter;
 
 @Getter
 public class BadRequestException extends RuntimeException {
-    private final TransferMoneyResponse moneyResponse;
-    public BadRequestException(TransferMoneyResponse moneyResponse) {
-        this.moneyResponse = moneyResponse;
+    private final ErrorResponse errorResponse;
+    public BadRequestException(ErrorResponse errorResponse) {
+        this.errorResponse = errorResponse;
+
     }
 }

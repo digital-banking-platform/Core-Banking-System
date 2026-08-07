@@ -1,14 +1,19 @@
-package com.siddu.auth.dto.Requests;
+package com.siddu.accounts.Dto.Requests;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.hibernate.validator.constraints.Length;
 
 @Getter
 @AllArgsConstructor
 public class SetPinRequest {
+
+    @NotBlank(message = "account number is required")
+    String AccountNumber;
+
+    @NotBlank
+    @Pattern(regexp = "[0-9]{4}")
 
     @NotBlank(message = "PIN is required")
     @Pattern(

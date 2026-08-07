@@ -1,7 +1,7 @@
 package com.siddu.accounts.services;
 
 import com.siddu.accounts.Dto.Requests.AddressUpdateRequest;
-import com.siddu.accounts.Dto.Requests.CreateBankAccountRequest;
+import com.siddu.accounts.Dto.Requests.CreateProfile;
 import com.siddu.accounts.Dto.Responses.ApiResponse;
 import com.siddu.accounts.Dto.Responses.ProfileResponse;
 import com.siddu.accounts.Dto.Responses.SuccessResponse;
@@ -30,26 +30,13 @@ public class ProfilemanagementService {
 
     }
 
-    public void validateExistingProfile(AccountProfileEntity profile, CreateBankAccountRequest request) {
-        if (!profile.getAadhaarNumber().equalsIgnoreCase(request.getAadhaarNumber())) {
-            throw new KycMismatchException("Aadhaar Number does not match the existing KYC profile");
+
+    @Transactional
+    public ProfileResponse createProfile(CreateProfile request) {
+
+        if(accountProfileEntityRepository.existsByUserId(SecurityUtils.getCurrentUserId())){
+            throw new DuplicateResourceFoundException("profile already exists");
         }
-
-        if (!profile.getAccountHolderName().equalsIgnoreCase(request.getAccountHolderName())) {
-            throw new KycMismatchException("Account holder name does not match the existing KYC profile.");
-        }
-        if (!profile.getDateOfBirth().equals(request.getDateOfBirth())) {
-            throw new KycMismatchException("Date of birth does not match the existing KYC profile.");
-        }
-        if (!profile.getGender().equals(request.getGender())) {
-            throw new KycMismatchException("Gender does not match the existing KYC profile.");
-        }
-
-    }
-
-
-
-    public AccountProfileEntity createProfile(CreateBankAccountRequest request, UUID userId) {
 
         if (accountProfileEntityRepository.existsByAadhaarNumber(request.getAadhaarNumber())) {
             throw new AccountAlreadyExistsException("Aadhaar Number already exists with other profile ");
@@ -63,8 +50,8 @@ public class ProfilemanagementService {
             throw new InvalidAgeException("User must be At least 18 years old");
         }
 
-        AccountProfileEntity accountProfileEntity = AccountProfileEntity.builder()
-                .userId(userId)
+        AccountProfileEntity Profile = AccountProfileEntity.builder()
+                .userId(SecurityUtils.getCurrentUserId())
                 .accountHolderName(request.getAccountHolderName())
                 .dateOfBirth(request.getDateOfBirth())
                 .aadhaarNumber(request.getAadhaarNumber())
@@ -77,9 +64,17 @@ public class ProfilemanagementService {
                 .pincode(request.getPincode())
                 .build();
 
-        return accountProfileEntityRepository.save(accountProfileEntity);
-
-
+       accountProfileEntityRepository.save(Profile);
+       return new ProfileResponse(
+               Profile.getAccountHolderName(),
+               Profile.getDateOfBirth(),
+               Profile.getPhoneNumber(),
+               Profile.getAddressLine(),
+               Profile.getCity(),
+               Profile.getState(),
+               Profile.getPincode(),
+               Profile.getKycStatus()
+       );
     }
 
 
@@ -159,10 +154,12 @@ public class ProfilemanagementService {
     public  ProfileResponse getProfileDetails(UUID userId) {
         Optional<AccountProfileEntity> profile = accountProfileEntityRepository.findByUserId(userId);
         if (profile.isEmpty()) {
-            throw new AccountNotFoundException("user dont have bank accounts");
+            throw new AccountNotFoundException("user dont have bank profile");
         }
 
+
         AccountProfileEntity accountprofile=profile.get();
+        System.out.println(accountprofile.getId());
 
         return new ProfileResponse(accountprofile.getAccountHolderName(),accountprofile.getDateOfBirth()
                 ,accountprofile.getPhoneNumber(),accountprofile.getAddressLine(),accountprofile.getCity()

@@ -28,9 +28,6 @@ public class FailedTransactionService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW,
             noRollbackFor = {
-                    ResourceNotFoundException.class,
-                    AccessForbiddenException.class,
-                    AccountInactiveException.class,
                     InsufficientBalanceException.class,
                     InvalidPinException.class,
                     BadRequestException.class,
@@ -41,6 +38,7 @@ public class FailedTransactionService {
         transaction.setFailureReason(response.message());
         transaction.setCompletedAt(LocalDateTime.now());
         transactionEntityRepository.save(transaction);
+        System.out.println(transaction.getSnapshot().getDestinationAccountHolderName());
 
         TransferMoneyResponse moneyResponse=new TransferMoneyResponse(
                 transaction.getTransactionId(),
@@ -59,25 +57,11 @@ public class FailedTransactionService {
         TransferErrorCode code=response.errorCode();
         switch (code) {
 
-            case SENDER_ACCOUNT_NOT_FOUND,
-                 RECEIVER_ACCOUNT_NOT_FOUND ->
-                    throw new ResourceNotFoundException(moneyResponse);
-
-            case ACCESS_DENIED ->
-                    throw new AccessForbiddenException(moneyResponse);
-
-            case SENDER_ACCOUNT_INACTIVE,
-                 RECEIVER_ACCOUNT_INACTIVE ->
-                    throw new AccountInactiveException(moneyResponse);
-
             case INSUFFICIENT_BALANCE ->
                     throw new InsufficientBalanceException(moneyResponse);
 
             case INVALID_PIN ->
                     throw new InvalidPinException(moneyResponse);
-
-            case SAME_ACCOUNT->
-                    throw new BadRequestException(moneyResponse);
 
             case CONCURRENT_TRANSACTION ->
                     throw new ConcurrentTransactionException(moneyResponse);
@@ -87,4 +71,13 @@ public class FailedTransactionService {
         }
 
     }
+
+    @Transactional
+    public void markAccountServiceError(TransactionEntity transaction){
+        transaction.setStatus(TransactionStatus.FAILED);
+        transaction.setFailureReason("ACCOUNT_SERVICE_ERROR");
+        transaction.setCompletedAt(LocalDateTime.now());
+        transactionEntityRepository.save(transaction);
+    }
+
 }
