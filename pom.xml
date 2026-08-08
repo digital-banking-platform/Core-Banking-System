@@ -40,6 +40,7 @@
         <module>Auth-Service</module>
         <module>Account-Service</module>
         <module>Transaction-services</module>
+        <module>Api-gate-way</module>
     </modules>
 
 </project>

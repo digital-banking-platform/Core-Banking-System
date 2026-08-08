@@ -2,7 +2,6 @@ package com.siddu.accounts.Utils;
 
 import java.security.SecureRandom;
 
-
 public class IfscGenerator {
     private static final String prefix="SIDB";
     private static final SecureRandom random = new SecureRandom();
