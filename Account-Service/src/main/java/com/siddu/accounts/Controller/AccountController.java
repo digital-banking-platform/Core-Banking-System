@@ -25,9 +25,22 @@ public class AccountController {
         this.profilemanagementService = profilemanagementService;
     }
 
-    @PostMapping("accounts/create-bank-Profile")
+    @PostMapping("Profile/create-bank-Profile")
     public ResponseEntity<ProfileResponse> createbankprofile(@RequestBody CreateProfile request) {
         return ResponseEntity.ok(profilemanagementService.createProfile(request));
+    }
+    @PutMapping("/profile/address")
+    public  ResponseEntity<ApiResponse<ProfileResponse>> updateAddress(@RequestBody AddressUpdateRequest request){
+        return ResponseEntity.ok(profilemanagementService.updateAddress(request));
+    }
+    @PostMapping("/profile/name")
+    public ResponseEntity<SuccessResponse> updateProfileName(@RequestBody UpdateProfileNameRequest request){
+        return ResponseEntity.ok(profilemanagementService.updateProfilename(request.name()));
+    }
+    @GetMapping("Profile/me")
+    public ResponseEntity<ProfileResponse> getProfile() {
+        UUID userId= SecurityUtils.getCurrentUserId();
+        return ResponseEntity.ok(profilemanagementService.getProfileDetails(userId));
     }
 
     @PostMapping("accounts/create-bank-account")
@@ -36,11 +49,7 @@ public class AccountController {
 
     }
 
-    @GetMapping("Profile/me")
-    public ResponseEntity<ProfileResponse> getProfile() {
-        UUID userId= SecurityUtils.getCurrentUserId();
-        return ResponseEntity.ok(profilemanagementService.getProfileDetails(userId));
-    }
+
     @GetMapping("/accounts/me")
     public ResponseEntity<AccountsResponse> getAccountProfile() {
         UUID userId= SecurityUtils.getCurrentUserId();
@@ -53,14 +62,7 @@ public class AccountController {
         return ResponseEntity.ok(bankAccountService.checkaccountbalance(request));
 
     }
-    @PutMapping("/profile/address")
-    public  ResponseEntity<ApiResponse<ProfileResponse>> updateAddress(@RequestBody AddressUpdateRequest request){
-        return ResponseEntity.ok(profilemanagementService.updateAddress(request));
-    }
-    @PostMapping("/profile/name")
-    public ResponseEntity<SuccessResponse> updateProfileName(@RequestBody UpdateProfileNameRequest request){
-        return ResponseEntity.ok(profilemanagementService.updateProfilename(request.name()));
-    }
+
 
 
 }

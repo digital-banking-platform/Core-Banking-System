@@ -22,21 +22,21 @@ public class UserAccessController {
 
 
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    @GetMapping("/admin/users")
+    @GetMapping("/admin/auth/users")
     public ResponseEntity<Page<UserStatusResponse>> getUsers(@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "15") int size) {
         return  ResponseEntity.ok(userAccessManagementService.getUsers(page,size));
 
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/admin/users/roles/assign")
+    @PostMapping("/admin/auth/users/roles/assign")
     public ResponseEntity<RolesResponse> assignRole(@RequestBody RoleRequest roleAssignRequest) {
         return ResponseEntity.ok(userAccessManagementService.assignRole(roleAssignRequest));
 
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/admin/users")
+    @DeleteMapping("/admin/auth/users")
     public ResponseEntity<RolesResponse> revokeRole(@RequestBody RoleRequest roleRevokeRequest) {
         return ResponseEntity.ok(userAccessManagementService.revokeRole(roleRevokeRequest));
 
@@ -44,7 +44,7 @@ public class UserAccessController {
 
 
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
-    @PatchMapping("/admin/users/status")
+    @PatchMapping("/admin/auth/users/status")
      public ResponseEntity<StatusUpdateResponse>  updateStatus(@RequestBody StatusUpdateRequest request){
         return ResponseEntity.ok(userAccessManagementService.updateStatus(request));
     }
