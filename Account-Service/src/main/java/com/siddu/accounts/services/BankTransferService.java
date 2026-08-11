@@ -44,9 +44,6 @@ public class BankTransferService {
             backoff = @Backoff(delay = 50)
     )
     public AccountTransferResponse transfer(AccountTransferRequest request) {
-        System.out.println("Sender : " + request.senderAccountNumber());
-        System.out.println("Receiver : " + request.receiverAccountNumber());
-        System.out.println("Txn Pin : " + request.transactionPin());
 
         AccountsEntity senderAccount =
                 accountEntityRepository.findByAccountNumber(request.senderAccountNumber()).orElseThrow();

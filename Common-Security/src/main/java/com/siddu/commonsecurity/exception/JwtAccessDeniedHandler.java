@@ -28,7 +28,7 @@ import java.util.Map;
             Map<String, Object> body = Map.of(
                     "status", 403,
                     "error", "FORBIDDEN",
-                    "message", "Access denied",
+                    "message", "You are not authorized to access this resource.",
                     "path", request.getRequestURI(),
                     "timestamp", Instant.now().toString()
             );

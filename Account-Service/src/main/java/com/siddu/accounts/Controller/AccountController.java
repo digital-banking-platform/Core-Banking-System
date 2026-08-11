@@ -25,7 +25,7 @@ public class AccountController {
         this.profilemanagementService = profilemanagementService;
     }
 
-    @PostMapping("Profile/create-bank-Profile")
+    @PostMapping("profile/create-bank-Profile")
     public ResponseEntity<ProfileResponse> createbankprofile(@RequestBody CreateProfile request) {
         return ResponseEntity.ok(profilemanagementService.createProfile(request));
     }
@@ -37,7 +37,7 @@ public class AccountController {
     public ResponseEntity<SuccessResponse> updateProfileName(@RequestBody UpdateProfileNameRequest request){
         return ResponseEntity.ok(profilemanagementService.updateProfilename(request.name()));
     }
-    @GetMapping("Profile/me")
+    @GetMapping("profile/me")
     public ResponseEntity<ProfileResponse> getProfile() {
         UUID userId= SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(profilemanagementService.getProfileDetails(userId));
@@ -52,6 +52,7 @@ public class AccountController {
 
     @GetMapping("/accounts/me")
     public ResponseEntity<AccountsResponse> getAccountProfile() {
+
         UUID userId= SecurityUtils.getCurrentUserId();
         return ResponseEntity.ok(bankAccountService.getAccountDetails(userId));
     }

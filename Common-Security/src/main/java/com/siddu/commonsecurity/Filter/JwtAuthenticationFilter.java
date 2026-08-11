@@ -41,6 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         return path.equals("/Auth/login")
                 || path.equals("/Auth/register")
+                || path.equals("/Auth/refresh")
                 || path.equals("/Auth/logout");
 
     }
@@ -101,6 +102,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
+
 
         }catch (JwtException ex) {
             SecurityContextHolder.clearContext();

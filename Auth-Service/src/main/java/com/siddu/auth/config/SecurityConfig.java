@@ -1,5 +1,6 @@
 package com.siddu.auth.config;
 
+import com.siddu.commonsecurity.Filter.GatewayAuthenticationFilter;
 import com.siddu.commonsecurity.Filter.JwtAuthenticationFilter;
 import com.siddu.commonsecurity.exception.JwtAccessDeniedHandler;
 import com.siddu.commonsecurity.exception.JwtAuthenticationEntryPoint;
@@ -23,6 +24,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
         private final JwtAuthenticationFilter jwtAuthenticationFilter;
         private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
         private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+        private final GatewayAuthenticationFilter gatewayAuthenticationFilter;
 
 
 
@@ -52,7 +54,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
                             .anyRequest().authenticated()
                     )
                     .addFilterBefore(
-                            jwtAuthenticationFilter,
+                            gatewayAuthenticationFilter,
                             UsernamePasswordAuthenticationFilter.class
                     );
 

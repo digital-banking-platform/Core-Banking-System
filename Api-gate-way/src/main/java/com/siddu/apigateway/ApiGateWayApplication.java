@@ -3,7 +3,12 @@ package com.siddu.apigateway;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(
+        scanBasePackages = {
+                "com.siddu.apigateway",
+                "com.siddu.commonsecurity"
+        }
+)
 public class ApiGateWayApplication {
 
     public static void main(String[] args) {

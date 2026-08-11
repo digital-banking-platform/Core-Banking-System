@@ -1,6 +1,6 @@
 package com.siddu.transactionservices.Config;
 
-import com.siddu.commonsecurity.Filter.JwtAuthenticationFilter;
+import com.siddu.commonsecurity.Filter.GatewayAuthenticationFilter;
 import com.siddu.commonsecurity.exception.JwtAccessDeniedHandler;
 import com.siddu.commonsecurity.exception.JwtAuthenticationEntryPoint;
 import jakarta.servlet.DispatcherType;
@@ -16,11 +16,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity()
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final GatewayAuthenticationFilter gatewayAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
@@ -43,7 +43,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
-                        jwtAuthenticationFilter,
+                        gatewayAuthenticationFilter,
                         UsernamePasswordAuthenticationFilter.class
                 );
 
