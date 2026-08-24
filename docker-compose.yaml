@@ -1,0 +1,120 @@
+services:
+
+  auth-db:
+    image: postgres:17
+    container_name: auth_db
+    ports:
+      - "5433:5432"
+
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "12345"
+
+
+    volumes:
+      - ./Auth-Service/auth_db-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    image: auth-service:latest
+    container_name: auth-service
+
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-db:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "12345"
+      JWT_SECRET: "Kp7q8Hf9m1Yv0M0RrXl+TtqUO9sA3R6c2ZkFJm1P3S0="
+      JWT_ACCESS_TOKEN_EXPIRATION: 900000
+      JWT_REFRESH_TOKEN_EXPIRATION: 604800000
+
+    depends_on:
+      auth-db:
+        condition: service_healthy
+
+  account_db:
+    image: postgres:17
+    container_name: account_db
+
+    environment:
+      POSTGRES_DB: account_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "12345"
+
+    volumes:
+      - ./Account-Service/account_db-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d account_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  account-service:
+    image: account-service:latest
+    container_name: account-service
+
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://account_db:5432/account_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "12345"
+
+    depends_on:
+      account_db:
+        condition: service_healthy
+
+
+  transaction_db:
+    image: postgres:17
+    container_name: transaction_db
+
+    environment:
+      POSTGRES_DB: transaction_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "12345"
+
+    volumes:
+      - ./Transaction-services/transaction_db-data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d transaction_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  transaction-service:
+    image: transaction-service:latest
+    container_name: transaction-service
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://transaction_db:5432/transaction_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: "12345"
+
+    depends_on:
+      transaction_db:
+        condition: service_healthy
+
+
+  api-gateway:
+    image: api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+
+    environment:
+      JWT_SECRET: "Kp7q8Hf9m1Yv0M0RrXl+TtqUO9sA3R6c2ZkFJm1P3S0="
+    depends_on:
+      - auth-service
+      - account-service
+      - transaction-service
+
+
+

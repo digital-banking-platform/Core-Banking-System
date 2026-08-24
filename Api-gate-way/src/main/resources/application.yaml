@@ -11,24 +11,24 @@ spring:
         webmvc:
           routes:
             - id: account-service
-              uri: http://localhost:8082
+              uri: http://account-service:8082
               predicates:
                 - Path=/accounts/**,/profile/**,/admin/accounts/**,/admin/profiles/**
               filters:
                 - addUserHeaders
             - id : auth-public
-              uri: http://localhost:8081
+              uri: http://auth-service:8081
               predicates:
                 - Path=/Auth/login,/Auth/register,/Auth/refresh,/Auth/logout
 
             - id : auth-admin
-              uri: http://localhost:8081
+              uri: http://auth-service:8081
               predicates:
                 - Path=/admin/auth/**
               filters:
                 - addUserHeaders
             - id: Transaction-services
-              uri: http://localhost:8083
+              uri: http://transaction-service:8083
               predicates:
                 - Path=/payment-transactions/**
               filters:

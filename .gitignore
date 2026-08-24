@@ -10,3 +10,8 @@ target/
 *.class
 *.iml
 "@ | Out-File -Encoding utf8 .gitignore
+
+**/auth_db-data/
+**/account_db-data/
+**/transaction_db-data/
+
