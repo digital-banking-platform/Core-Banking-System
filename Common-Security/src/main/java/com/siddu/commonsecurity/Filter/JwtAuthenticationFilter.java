@@ -1,13 +1,14 @@
 package com.siddu.commonsecurity.Filter;
 
 import com.siddu.commonsecurity.Jwt.JwtValidator;
+import com.siddu.commonsecurity.Jwt.CheckTokenBlockList;
 import com.siddu.commonsecurity.exception.JwtAuthenticationEntryPoint;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpHeaders;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,11 +29,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
    private final JwtValidator jwtValidator;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
+    private final CheckTokenBlockList checktokenBlockList;
 
     public JwtAuthenticationFilter(JwtValidator jwtValidator,
-                                   JwtAuthenticationEntryPoint authenticationEntryPoint) {
+                                   JwtAuthenticationEntryPoint authenticationEntryPoint,
+                                   CheckTokenBlockList checktokenBlockList) {
         this.jwtValidator = jwtValidator;
         this.authenticationEntryPoint = authenticationEntryPoint;
+        this.checktokenBlockList = checktokenBlockList;
+
     }
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -54,21 +59,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
 
-        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+        Cookie[] cookies = request.getCookies();
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        String token = null;
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("ACCESS_TOKEN".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (token == null || token.isBlank()) {
             filterChain.doFilter(request, response);
             return;
         }
-
-
-
-        if (SecurityContextHolder.getContext().getAuthentication() != null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String token = authHeader.substring(7);
 
         try {
             if (!jwtValidator.isTokenValid(token)) {
@@ -81,6 +88,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
 
             UUID userId = jwtValidator.extractUserId(token);
+
+            if(checktokenBlockList.isUserLoggedOut(userId)){
+                authenticationEntryPoint.commence(
+                        request,
+                        response,
+                        new InsufficientAuthenticationException("Invalid or expired token,please login again")
+                );
+                return;
+
+            }
+
             List<String> roles = jwtValidator.extractRoles(token);
 
 
@@ -104,7 +122,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
 
-        }catch (JwtException ex) {
+        }catch (JwtException | IllegalArgumentException ex) {
             SecurityContextHolder.clearContext();
 
             authenticationEntryPoint.commence(

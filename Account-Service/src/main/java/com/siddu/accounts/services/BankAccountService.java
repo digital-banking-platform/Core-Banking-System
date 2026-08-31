@@ -58,6 +58,7 @@ public class BankAccountService {
                     " bank branch to complete verification.");
         }
 
+
         String AccountNumber;
         do {
             AccountNumber = AccountNumberGenerator.generate();
@@ -125,6 +126,9 @@ public class BankAccountService {
 
         if(!account.getStatus().equals(AccountStatus.ACTIVE)){
             throw new AccountInactiveException("account is not active");
+        }
+        if(!passwordEncoder.matches(request.getPin(),account.getTransactionPinHash())){
+            throw new InvalidPinException("Invalid pin");
         }
 
 

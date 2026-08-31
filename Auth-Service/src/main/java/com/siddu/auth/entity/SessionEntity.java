@@ -13,7 +13,11 @@ import java.util.UUID;
         name = "sessions",
         indexes = {
                 @Index(name = "idx_sessions_user", columnList = "user_id"),
-                @Index(name = "idx_sessions_active", columnList = "is_active")
+                @Index(name = "idx_sessions_active", columnList = "is_active"),
+                @Index(
+                        name = "idx_sessions_user_active",
+                        columnList = "user_id,is_active"
+                )
         }
 )
 @Getter

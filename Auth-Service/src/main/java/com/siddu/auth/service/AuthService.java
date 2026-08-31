@@ -8,6 +8,7 @@ import com.siddu.auth.entity.*;
 import com.siddu.auth.exception.*;
 import com.siddu.auth.repository.*;
 import com.siddu.auth.security.JwtService;
+import com.siddu.auth.util.TokenBlockList;
 import com.siddu.auth.util.TokenHashUtil;
 import com.siddu.commonsecurity.Jwt.JwtValidator;
 import jakarta.transaction.Transactional;
@@ -30,10 +31,11 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JwtValidator jwtValidator;
+    private final TokenBlockList  tokenBlockList;
      @Autowired
     public AuthService(UserRepository userRepository, UserRoleRepository userRoleRepository, RoleRepository roleRepository,
                        SessionRepository sessionRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
-                       JwtValidator jwtValidator
+                       JwtValidator jwtValidator, TokenBlockList tokenBlockList
      ) {
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
@@ -42,6 +44,7 @@ public class AuthService {
          this.passwordEncoder = passwordEncoder;
          this.jwtService = jwtService;
          this.jwtValidator = jwtValidator;
+         this.tokenBlockList = tokenBlockList;
 
     }
 
@@ -118,8 +121,10 @@ public class AuthService {
                 .isActive(true)
                 .expiresAt(Instant.now().plusSeconds(7 * 24 * 60 * 60))
                 .build();
+        tokenBlockList.unblockUser(user.getId());
 
         sessionRepository.save(session);
+
 
         return new AuthResult(new UserResponse(user.getEmail(),roles),accessToken,refreshToken);
 
@@ -128,11 +133,11 @@ public class AuthService {
     public LogoutResponse logoutUser(UUID userId) {
          sessionRepository.deactivateAllByUser(userId);
          return new LogoutResponse("logout successfully");
-
     }
 
     @Transactional
     public TokenResponse rotateRefreshToken(String refreshToken) {
+
          if(!jwtValidator.isRefreshTokenValid(refreshToken)) {
              throw new InvalidTokenException("invalid token");
          }

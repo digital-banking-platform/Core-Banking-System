@@ -116,5 +116,12 @@ services:
       - account-service
       - transaction-service
 
+  bank-redis:
+    image: redis:latest
+    container_name: bank-redis
+    ports:
+      - "6379:6379"
+
+
 
 

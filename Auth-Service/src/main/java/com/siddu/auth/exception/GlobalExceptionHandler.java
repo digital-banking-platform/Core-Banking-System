@@ -71,12 +71,13 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ApierrorResponse> handleMissingBody() {
+    public ResponseEntity<ApierrorResponse> handleMissingBody(
+            HttpMessageNotReadableException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ApierrorResponse(
                         HttpStatus.BAD_REQUEST.name(),
-                        "Request body is missing or malformed"
+                        ex.getMessage()
                 ));
     }
 

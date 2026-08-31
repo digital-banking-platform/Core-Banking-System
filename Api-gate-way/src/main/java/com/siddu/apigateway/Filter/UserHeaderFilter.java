@@ -1,4 +1,5 @@
 package com.siddu.apigateway.Filter;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -7,23 +8,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.function.ServerRequest;
 import org.springframework.web.servlet.function.HandlerFilterFunction;
 import org.springframework.web.servlet.function.ServerResponse;
-
 import java.util.List;
 import java.util.UUID;
 
 @Component
 public class UserHeaderFilter {
-
     public static HandlerFilterFunction<ServerResponse, ServerResponse> addUserHeaders() {
 
         return (request, next) -> {
 
-
             Authentication authentication =
                     SecurityContextHolder.getContext()
                             .getAuthentication();
-
-
 
             if (authentication == null || !authentication.isAuthenticated()) {
                 return next.handle(request);
@@ -36,7 +32,6 @@ public class UserHeaderFilter {
                             .stream()
                             .map(GrantedAuthority::getAuthority)
                             .toList();
-
 
             ServerRequest modifiedRequest =
                     ServerRequest.from(request)

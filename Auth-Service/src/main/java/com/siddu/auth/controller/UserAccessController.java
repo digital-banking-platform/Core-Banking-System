@@ -6,6 +6,7 @@ import com.siddu.auth.dto.Response.RolesResponse;
 import com.siddu.auth.dto.Response.StatusUpdateResponse;
 import com.siddu.auth.dto.Response.UserStatusResponse;
 import com.siddu.auth.service.UserAccessManagementService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,8 +37,8 @@ public class UserAccessController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/admin/auth/users")
-    public ResponseEntity<RolesResponse> revokeRole(@RequestBody RoleRequest roleRevokeRequest) {
+    @PostMapping("/admin/auth/users")
+    public ResponseEntity<RolesResponse> revokeRole(@Valid @RequestBody RoleRequest roleRevokeRequest) {
         return ResponseEntity.ok(userAccessManagementService.revokeRole(roleRevokeRequest));
 
     }

@@ -58,7 +58,7 @@ public class AccountController {
     }
 
 
-    @GetMapping("/accounts/check-balance")
+    @PostMapping("/accounts/check-balance")
     public ResponseEntity<CheckBalanceResponse> getAccountBalance(@Valid @RequestBody CheckBalanceRequest request)  {
         return ResponseEntity.ok(bankAccountService.checkaccountbalance(request));
 

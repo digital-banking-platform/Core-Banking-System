@@ -4,6 +4,7 @@ import com.siddu.auth.dto.Requests.LoginRequest;
 import com.siddu.auth.dto.Requests.RegisterRequest;
 import com.siddu.auth.dto.Response.*;
 import com.siddu.auth.service.AuthService;
+import com.siddu.auth.util.TokenBlockList;
 import com.siddu.commonsecurity.Jwt.JwtValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,12 +20,14 @@ public class AuthController {
     private final AuthService authService;
     private final CookieUtil cookieutil;
     private final JwtValidator jwtValidator;
+    private final TokenBlockList tokenBlockList;
 
     @Autowired
-    public AuthController(AuthService authService, CookieUtil cookieutil, JwtValidator jwtValidator) {
+    public AuthController(AuthService authService, CookieUtil cookieutil, JwtValidator jwtValidator,TokenBlockList tokenBlockList) {
         this.authService = authService;
         this.cookieutil=cookieutil;
         this.jwtValidator = jwtValidator;
+        this.tokenBlockList = tokenBlockList;
     }
     @PostMapping("/Auth/register")
     public ResponseEntity<UserResponse> RegisterUser(@Valid @RequestBody RegisterRequest registerRequest,
@@ -49,10 +52,10 @@ public class AuthController {
         return ResponseEntity.ok(authResult.getUserResponse());
     }
 
-    @PostMapping("Auth/logout")
-    public ResponseEntity<LogoutResponse> logout(@RequestHeader("Authorization") String authheader,HttpServletResponse response) {
-        String token=authheader.substring(7);
-        UUID  userid=jwtValidator.extractUserId(token);
+    @PostMapping("/Auth/logout")
+    public ResponseEntity<LogoutResponse> logout(@CookieValue("ACCESS_TOKEN") String accessToken,HttpServletResponse response) {
+        UUID  userid=jwtValidator.extractUserId(accessToken);
+        tokenBlockList.blockUser(accessToken,userid);
         LogoutResponse logoutResponse = authService.logoutUser(userid);
         cookieutil.clearAccessToken(response);
         cookieutil.clearRefreshToken(response);
@@ -60,7 +63,7 @@ public class AuthController {
 
     }
 
-    @PostMapping("Auth/refresh")
+    @PostMapping("/Auth/refresh")
     public ResponseEntity<?> rotateRefreshToken(@CookieValue("REFRESH_TOKEN") String refreshToken,HttpServletResponse response) {
         TokenResponse tokenresponse=authService.rotateRefreshToken(refreshToken);
         cookieutil.addAccessToken(response,tokenresponse.getToken());

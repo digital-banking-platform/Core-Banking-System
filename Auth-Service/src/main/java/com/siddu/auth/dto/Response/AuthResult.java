@@ -11,7 +11,7 @@ public class AuthResult {
     public AuthResult(UserResponse userResponse, String token, String refreshToken) {
         this.userResponse = userResponse;
         this.token = token;
-        this.refreshToken = token;
+        this.refreshToken = refreshToken;
     }
 
 }

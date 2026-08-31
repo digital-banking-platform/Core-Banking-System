@@ -193,7 +193,6 @@ public class BankTransferService {
                     null
                     );
         }
-        System.out.println("validated successfully");
 
         return new TransactionValidationResponse(
                 ValidationStatus.Success,
