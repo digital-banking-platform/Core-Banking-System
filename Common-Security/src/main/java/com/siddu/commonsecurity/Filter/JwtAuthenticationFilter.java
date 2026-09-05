@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
    private final JwtValidator jwtValidator;
