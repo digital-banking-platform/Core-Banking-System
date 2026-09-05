@@ -98,6 +98,24 @@ The API Gateway acts as the entry point for client requests and routes requests 
 
 It also participates in JWT-based authentication and route-level authorization.
 
+## Rate Limiting
+
+The API Gateway enforces per-user rate limiting, backed by Redis, to protect backend services from abuse and accidental request storms.
+
+**Configuration**
+- **Limit:** 25 requests per user per 2-minute rolling window
+- **Scope:** Enforced by authenticated user ID (extracted from the JWT), not by IP — so the limit follows the user regardless of network/device
+- **Storage:** Redis, used to track per-user request counts with automatic expiry
+- **Enforcement point:** API Gateway, before requests are routed to downstream services
+
+**Why Redis:** rate limiting needs fast, shared counters that expire automatically — Redis is in-memory, supports atomic increment operations (`INCR`), and lets multiple gateway instances share the same rate-limit state consistently (important if the gateway is ever scaled horizontally, since an in-memory counter per instance wouldn't be consistent across replicas). TTL-based expiry also means the rolling window resets cleanly without needing a separate cleanup job.
+
+**Behavior**
+| Condition | Response |
+|---|---|
+| Under limit | Request proceeds normally |
+| Over limit | `429 Too Many Requests` with a structured error body |
+
 ## Key Engineering Areas
 
 ### Authentication & Authorization
