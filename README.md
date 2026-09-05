@@ -98,7 +98,7 @@ The API Gateway acts as the entry point for client requests and routes requests 
 
 It also participates in JWT-based authentication and route-level authorization.
 
-## Rate Limiting
+### Rate Limiting
 
 The API Gateway enforces per-user rate limiting, backed by Redis, to protect backend services from abuse and accidental request storms.
 
@@ -115,6 +115,9 @@ The API Gateway enforces per-user rate limiting, backed by Redis, to protect bac
 |---|---|
 | Under limit | Request proceeds normally |
 | Over limit | `429 Too Many Requests` with a structured error body |
+
+[📹 Watch rate-limit demo](demo/rate-limit-demo.mp4)
+
 
 ## Key Engineering Areas
 
