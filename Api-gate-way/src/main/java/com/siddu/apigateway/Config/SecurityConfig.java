@@ -1,6 +1,8 @@
 package com.siddu.apigateway.Config;
 
 import com.siddu.commonsecurity.Filter.JwtAuthenticationFilter;
+import com.siddu.commonsecurity.Jwt.CheckTokenBlockList;
+import com.siddu.commonsecurity.Jwt.JwtValidator;
 import com.siddu.commonsecurity.exception.JwtAccessDeniedHandler;
 import com.siddu.commonsecurity.exception.JwtAuthenticationEntryPoint;
 import jakarta.servlet.DispatcherType;
@@ -23,16 +25,26 @@ import java.util.List;
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtValidator jwtValidator;
+    private final CheckTokenBlockList checkTokenBlockList;
 
-    SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+
+
+
+
+
+
+    SecurityConfig(
                    JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
-                   JwtAccessDeniedHandler  jwtAccessDeniedHandler) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+                   JwtAccessDeniedHandler  jwtAccessDeniedHandler,
+                   JwtValidator jwtValidator,CheckTokenBlockList checkTokenBlockList) {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
+        this.jwtValidator = jwtValidator;
+        this.checkTokenBlockList = checkTokenBlockList;
     }
 
     @Bean
@@ -69,6 +81,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+         JwtAuthenticationFilter jwtAuthenticationFilter=
+            new JwtAuthenticationFilter(
+                    jwtValidator,
+                    jwtAuthenticationEntryPoint,
+                    checkTokenBlockList
+            );
+
 
         http
                 .cors(Customizer.withDefaults())

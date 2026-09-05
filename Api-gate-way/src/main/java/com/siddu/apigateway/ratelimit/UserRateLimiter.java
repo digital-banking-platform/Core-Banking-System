@@ -9,8 +9,8 @@ import java.util.UUID;
 @Component
 public class UserRateLimiter {
 
-    private static final long MAX_REQUESTS = 10;
-    private static final Duration WINDOW = Duration.ofMinutes(1);
+    private static final long MAX_REQUESTS = 25;
+    private static final Duration WINDOW = Duration.ofMinutes(2);
 
     private final StringRedisTemplate redisTemplate;
 
