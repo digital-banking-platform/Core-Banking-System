@@ -121,6 +121,8 @@ The transaction service also separates different transaction states into dedicat
 ### Idempotent Transaction Processing
 
 Transaction processing includes idempotency handling to prevent duplicate processing of repeated requests.
+ 
+[📹 Watch Idempotent Request Handling demo](demo/idempotency-demo.mp4)
 
 ### Failure Handling
 
