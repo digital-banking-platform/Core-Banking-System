@@ -20,6 +20,7 @@ import com.siddu.transactionservices.Repository.TransactionEntityRepository;
 import com.siddu.transactionservices.Utils.SecurityUtils;
 import feign.FeignException;
 import feign.RetryableException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -80,7 +81,13 @@ public class TransactionService {
                         request.receiverAccountNumber()
                 ));
 
-        TransactionEntity transaction=pendingTransactionService.savePendingTransaction(request,validationResponse);
+        TransactionEntity transaction;
+        try {
+            transaction = pendingTransactionService.savePendingTransaction(request, validationResponse);
+        }
+        catch (DataIntegrityViolationException e) {
+            return pendingTransactionService.fetchExistingTransaction(request.senderAccountNumber(),request.idempotencyKey());
+        }
 
         AccountTransferResponse response;
 

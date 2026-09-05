@@ -157,7 +157,6 @@ public class ProfilemanagementService {
             throw new AccountNotFoundException("user dont have bank profile");
         }
 
-
         AccountProfileEntity accountprofile=profile.get();
         System.out.println(accountprofile.getId());
 

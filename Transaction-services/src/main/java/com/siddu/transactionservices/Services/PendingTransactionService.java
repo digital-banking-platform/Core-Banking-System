@@ -3,9 +3,11 @@ package com.siddu.transactionservices.Services;
 
 import com.siddu.Enums.ValidationStatus;
 import com.siddu.dto.transfer.Response.TransactionValidationResponse;
-import com.siddu.transactionservices.Client.AccountClient;
 import com.siddu.transactionservices.Dto.Requests.TransferMoneyRequest;
+import com.siddu.transactionservices.Dto.Response.AccessForbiddenResponse;
+import com.siddu.transactionservices.Dto.Response.AccountTransactionParty;
 import com.siddu.transactionservices.Dto.Response.TXNFailedResponse;
+import com.siddu.transactionservices.Dto.Response.TransferMoneyResponse;
 import com.siddu.transactionservices.Entity.TransactionEntity;
 import com.siddu.transactionservices.Entity.TransactionSnapshotEntity;
 import com.siddu.transactionservices.Enums.PendingReason;
@@ -19,17 +21,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 public class PendingTransactionService {
-    private final AccountClient accountClient;
     private final TransactionEntityRepository transactionEntityRepository;
 
     @Autowired
-    public PendingTransactionService(TransactionEntityRepository transactionEntityRepository
-    , AccountClient accountClient) {
+    public PendingTransactionService(TransactionEntityRepository transactionEntityRepository) {
 
         this.transactionEntityRepository = transactionEntityRepository;
-        this.accountClient = accountClient;
 
 
     }
@@ -60,9 +61,36 @@ public class PendingTransactionService {
 
             snapshot.setTransaction(pendingTransaction);
             pendingTransaction.setSnapshot(snapshot);
-            return transactionEntityRepository.save(pendingTransaction);
+            return  transactionEntityRepository.save(pendingTransaction);
 
         }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public TransferMoneyResponse fetchExistingTransaction(String senderAccountNumber, UUID idempotencyKey) {
+        TransactionEntity existing = transactionEntityRepository.findByIdempotencyKey(idempotencyKey)
+                .orElseThrow();
+
+        boolean isOwner = existing.getSourceAccountNumber().equals(senderAccountNumber);
+        if (!isOwner) {
+            throw new AccessForbiddenException(new AccessForbiddenResponse("you are not authorized to access transaction"));
+        }
+
+        return new TransferMoneyResponse(
+                existing.getTransactionId(),
+                new AccountTransactionParty(
+                        existing.getSnapshot().getSourceAccountHolderName(),
+                        existing.getSourceAccountNumber()
+                ),
+                new AccountTransactionParty(
+                        existing.getSnapshot().getDestinationAccountHolderName(),
+                        existing.getDestinationAccountNumber()
+                ),
+                existing.getAmount(),
+                existing.getStatus(),
+                existing.getFailureReason(),
+                existing.getCreatedAt()
+        );
+    }
 
 
         private  void handlestatusResponse(TransactionValidationResponse validationResponse){
