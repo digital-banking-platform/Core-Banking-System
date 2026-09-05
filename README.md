@@ -116,6 +116,9 @@ The project uses Spring transaction management and optimistic locking for concur
 
 The transaction service also separates different transaction states into dedicated lifecycle handling.
 
+### Concurrency & Optimistic Locking
+[📹 Watch demo](demo/concurrency-demo.mp4)
+
 ### Idempotent Transaction Processing
 
 Transaction processing includes idempotency handling to prevent duplicate processing of repeated requests.
