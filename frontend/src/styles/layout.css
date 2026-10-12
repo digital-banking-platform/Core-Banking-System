@@ -1,0 +1,82 @@
+/* App shell: left rail on desktop, bottom tab bar on phones */
+.shell { display: grid; grid-template-columns: var(--rail-w) minmax(0, 1fr); min-height: 100vh; }
+
+.rail {
+  position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column; gap: 28px;
+  padding: 24px 16px 20px;
+  background: var(--surface); border-right: 1px solid var(--rule);
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 8px; text-decoration: none; }
+.brand__mark {
+  width: 32px; height: 32px; border-radius: var(--r-sm);
+  background: var(--cover-bg); color: var(--cover-brass);
+  display: grid; place-items: center; font-weight: 800; font-size: 17px; letter-spacing: -0.04em;
+  border: 1px solid var(--cover-brass);
+}
+.brand__name { font-weight: 700; font-size: 17px; letter-spacing: -0.02em; }
+
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav__group { margin: 18px 10px 6px; font-size: 13px; color: var(--text-3); font-weight: 600; }
+.nav__link {
+  display: flex; align-items: center; gap: 12px; padding: 9px 10px;
+  border-radius: var(--r-sm); text-decoration: none; color: var(--text-2); font-weight: 550;
+  border-left: 3px solid transparent;
+}
+.nav__link:hover { background: var(--surface-2); color: var(--text); }
+.nav__link[aria-current="page"] { background: var(--surface-2); color: var(--text); border-left-color: var(--brass); }
+
+.rail__foot { margin-top: auto; border-top: 1px solid var(--rule-soft); padding: 14px 8px 0; display: grid; gap: 10px; }
+.who { min-width: 0; }
+.who__email { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.who__role { font-size: 13px; color: var(--text-3); }
+
+.main { padding: 36px clamp(20px, 4vw, 56px) 64px; max-width: 1180px; width: 100%; }
+.app-error-state { min-height: calc(100vh - 100px); display: grid; place-items: center; }
+.app-error-state .alert { width: min(100%, 560px); display: grid; justify-items: center; text-align: center; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+.page-head p { color: var(--text-2); margin-top: 6px; max-width: 56ch; }
+
+.grid-2 { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.stack { display: grid; gap: 24px; }
+.row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.row--between { justify-content: space-between; }
+
+@media (max-width: 880px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .rail {
+    position: fixed; z-index: 20; top: auto; left: 0; right: 0; bottom: 0; height: auto;
+    flex-direction: row; align-items: stretch; gap: 0; padding: 0 4px calc(4px + env(safe-area-inset-bottom, 0px));
+    border-right: 0; border-top: 1px solid var(--rule);
+  }
+  .brand, .rail__foot, .nav__group { display: none; }
+  .nav { flex-direction: row; width: 100%; justify-content: space-around; }
+  .nav__link {
+    flex: 1; flex-direction: column; gap: 2px; padding: 8px 2px; font-size: 12px; text-align: center;
+    border-left: 0; border-top: 3px solid transparent; border-radius: 0;
+  }
+  .nav__link[aria-current="page"] { border-top-color: var(--brass); background: transparent; }
+  .main { padding: 24px 16px calc(96px + env(safe-area-inset-bottom, 0px)); }
+  .app-error-state { min-height: calc(100vh - 120px - env(safe-area-inset-bottom, 0px)); }
+  .grid-2 { grid-template-columns: minmax(0, 1fr); }
+  h1 { font-size: 24px; }
+}
+
+/* Auth screens */
+.auth-root { min-height: 100vh; display: flex; flex-direction: column; }
+.auth { flex: 1; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); }
+.auth__aside {
+  background: var(--cover-bg); color: var(--cover-fg);
+  padding: clamp(28px, 5vw, 64px); display: flex; flex-direction: column; justify-content: space-between; gap: 40px;
+}
+.auth__aside h2 { font-size: clamp(26px, 3.2vw, 38px); line-height: 1.1; letter-spacing: -0.03em; font-weight: 700; max-width: 16ch; }
+.auth__aside p { color: var(--cover-dim); max-width: 38ch; margin-top: 14px; }
+.auth__main { display: grid; place-items: center; padding: 32px 20px; }
+.auth__card { width: 100%; max-width: 400px; display: grid; gap: 22px; }
+.auth__alt { color: var(--text-2); font-size: 14.5px; }
+.auth__alt a { color: var(--text); font-weight: 650; }
+@media (max-width: 880px) {
+  .auth { grid-template-columns: minmax(0, 1fr); }
+  .auth__aside { padding: 24px 20px; gap: 24px; }
+  .auth__aside .minileder { display: none; }
+}

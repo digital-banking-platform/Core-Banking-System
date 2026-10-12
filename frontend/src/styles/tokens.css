@@ -1,0 +1,85 @@
+/* Design tokens — Siddu Bank "passbook" system.
+   Ledger-blue rules on cool paper, navy ink, brass only where something is official. */
+:root {
+  --desk: #E6ECF3;
+  --surface: #FBFCFE;
+  --surface-2: #F1F5FA;
+  --text: #0F2547;
+  --text-2: #3C4E6C;
+  --text-3: #66789A;
+  --rule: #BFCEE2;
+  --rule-soft: #DEE7F1;
+  --accent: #0F2547;
+  --on-accent: #F5F8FC;
+  --focus: #1D4FD7;
+  --brass: #A97B1F;
+  --brass-soft: #F4E9CD;
+  --debit: #A52A2A;
+  --debit-soft: #F8E4E2;
+  --credit: #14684A;
+  --credit-soft: #DDF1E8;
+  --pending: #8A5E00;
+  --pending-soft: #FBEFCB;
+  --cover-bg: #0F2547;
+  --cover-fg: #F3F6FB;
+  --cover-dim: #9DB0CF;
+  --cover-brass: #D2A94E;
+
+  --font-ui: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-num: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --r-sm: 4px;
+  --r-md: 8px;
+  --rail-w: 244px;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #0A1322;
+    --surface: #111D32;
+    --surface-2: #17263F;
+    --text: #E8EEF8;
+    --text-2: #B3C1D8;
+    --text-3: #8596B2;
+    --rule: #2B3E5C;
+    --rule-soft: #1F3150;
+    --accent: #DCE7FA;
+    --on-accent: #0C1830;
+    --focus: #7EA3FF;
+    --brass: #D2A94E;
+    --brass-soft: #3A2F14;
+    --debit: #FF9B94;
+    --debit-soft: #3B1A1D;
+    --credit: #6FD3A6;
+    --credit-soft: #123226;
+    --pending: #F0C25A;
+    --pending-soft: #3A2D0D;
+    --cover-bg: #162B52;
+  }
+}
+
+:root[data-theme="dark"] {
+  --desk: #0A1322;
+  --surface: #111D32;
+  --surface-2: #17263F;
+  --text: #E8EEF8;
+  --text-2: #B3C1D8;
+  --text-3: #8596B2;
+  --rule: #2B3E5C;
+  --rule-soft: #1F3150;
+  --accent: #DCE7FA;
+  --on-accent: #0C1830;
+  --focus: #7EA3FF;
+  --brass: #D2A94E;
+  --brass-soft: #3A2F14;
+  --debit: #FF9B94;
+  --debit-soft: #3B1A1D;
+  --credit: #6FD3A6;
+  --credit-soft: #123226;
+  --pending: #F0C25A;
+  --pending-soft: #3A2D0D;
+  --cover-bg: #162B52;
+}

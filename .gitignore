@@ -14,4 +14,9 @@ target/
 **/auth_db-data/
 **/account_db-data/
 **/transaction_db-data/
+frontend/node_modules/**
+frontend/.idea
+frontend/dist
+frontend/README.md
+
 
