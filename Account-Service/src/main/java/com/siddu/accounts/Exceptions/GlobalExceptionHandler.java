@@ -87,7 +87,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).
                 body(new ApiErrorResponse(HttpStatus.BAD_REQUEST.name(),e.getMessage()));
     }
-
-
-
+    @ExceptionHandler(InvalidAgeException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidAgeException(InvalidAgeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).
+                body(new ApiErrorResponse(HttpStatus.BAD_REQUEST.name(),e.getMessage()));
+    }
+    
 }

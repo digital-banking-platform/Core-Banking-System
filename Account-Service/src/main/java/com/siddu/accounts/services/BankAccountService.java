@@ -58,6 +58,12 @@ public class BankAccountService {
                     " bank branch to complete verification.");
         }
 
+        if(accountEntityRepository.existsByProfileUserIdAndAccountType(SecurityUtils.getCurrentUserId(),request.getAccountType())){
+            throw new AccountAlreadyExistsException( "Account already exists with account type "+ request.getAccountType());
+        }
+
+
+
 
         String AccountNumber;
         do {
