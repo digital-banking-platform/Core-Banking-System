@@ -31,7 +31,7 @@ public class UserAccessController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/auth/users/roles/assign")
-    public ResponseEntity<RolesResponse> assignRole(@RequestBody RoleRequest roleAssignRequest) {
+    public ResponseEntity<RolesResponse> assignRole(@Valid @RequestBody RoleRequest roleAssignRequest) {
         return ResponseEntity.ok(userAccessManagementService.assignRole(roleAssignRequest));
 
     }
@@ -46,7 +46,7 @@ public class UserAccessController {
 
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @PatchMapping("/admin/auth/users/status")
-     public ResponseEntity<StatusUpdateResponse>  updateStatus(@RequestBody StatusUpdateRequest request){
+     public ResponseEntity<StatusUpdateResponse>  updateStatus(@Valid @RequestBody StatusUpdateRequest request){
         return ResponseEntity.ok(userAccessManagementService.updateStatus(request));
     }
 

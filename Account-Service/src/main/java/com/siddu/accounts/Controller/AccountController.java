@@ -26,15 +26,15 @@ public class AccountController {
     }
 
     @PostMapping("profile/create-bank-Profile")
-    public ResponseEntity<ProfileResponse> createbankprofile(@RequestBody CreateProfile request) {
+    public ResponseEntity<ProfileResponse> createbankprofile(@Valid @RequestBody CreateProfile request) {
         return ResponseEntity.ok(profilemanagementService.createProfile(request));
     }
     @PutMapping("/profile/address")
-    public  ResponseEntity<ApiResponse<ProfileResponse>> updateAddress(@RequestBody AddressUpdateRequest request){
+    public  ResponseEntity<ApiResponse<ProfileResponse>> updateAddress(@Valid @RequestBody AddressUpdateRequest request){
         return ResponseEntity.ok(profilemanagementService.updateAddress(request));
     }
     @PostMapping("/profile/name")
-    public ResponseEntity<SuccessResponse> updateProfileName(@RequestBody UpdateProfileNameRequest request){
+    public ResponseEntity<SuccessResponse> updateProfileName(@Valid @RequestBody UpdateProfileNameRequest request){
         return ResponseEntity.ok(profilemanagementService.updateProfilename(request.name()));
     }
     @GetMapping("profile/me")

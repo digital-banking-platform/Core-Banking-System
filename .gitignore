@@ -18,5 +18,6 @@ frontend/node_modules/**
 frontend/.idea
 frontend/dist
 frontend/README.md
+.env
 
 

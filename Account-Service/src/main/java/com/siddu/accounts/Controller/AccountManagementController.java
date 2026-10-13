@@ -29,7 +29,7 @@ public class AccountManagementController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/accounts/branches")
-    public ResponseEntity<ApiResponse<BranchResponse>> createBranch(@RequestBody CreateBranchRequest request) {
+    public ResponseEntity<ApiResponse<BranchResponse>> createBranch(@Valid @RequestBody CreateBranchRequest request) {
         return ResponseEntity.ok(accountManagementService.createBranch(request));
     }
 
@@ -41,7 +41,7 @@ public class AccountManagementController {
     }
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping("/admin/accounts")
-    public ResponseEntity<Page<BankAccountResponse>> getaccounts(@RequestParam(defaultValue = "SAVINGS")
+    public ResponseEntity<Page<BankAccountResponse>> getaccounts(@Valid @RequestParam(defaultValue = "SAVINGS")
                                                                      AccountType accountType,
                                                                  @RequestParam(defaultValue = "0") int page,
                                                                  @RequestParam(defaultValue = "6") int size) {
@@ -51,7 +51,7 @@ public class AccountManagementController {
     @PreAuthorize("hasAnyRole('ADMIN','MANAGER')")
     @GetMapping("/admin/accounts/profiles/kycstatus")
     public ResponseEntity<Page<ProfileResponse>> getProfilesBasedOnKYCStatus(
-            @RequestParam(defaultValue = "PENDING")KycStatus kycStatus
+            @Valid @RequestParam(defaultValue = "PENDING")KycStatus kycStatus
            ,@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size) {
         return ResponseEntity.ok(accountManagementService.getProfilesBasedOnKYCStatus(kycStatus,page,size));

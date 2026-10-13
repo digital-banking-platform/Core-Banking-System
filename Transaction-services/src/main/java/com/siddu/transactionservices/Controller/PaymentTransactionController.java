@@ -27,7 +27,7 @@ public class PaymentTransactionController {
     @PostMapping("/history")
     public ResponseEntity<Page<TransferMoneyResponse>> getHistory(@RequestParam(defaultValue = "0") int page,
                                                   @RequestParam(defaultValue = "10") int size,
-                                                  @RequestBody AccountNumberRequest request){
+                                                  @Valid @RequestBody AccountNumberRequest request){
         return ResponseEntity.ok(transactionService.getTransactionshistory(page,size,request));
 
     }

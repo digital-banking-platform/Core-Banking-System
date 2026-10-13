@@ -39,12 +39,12 @@ public class InternalAccountController {
         return ResponseEntity.ok(bankAccountService.getBranches(page, size));
     }
     @PostMapping("/accounts/internals/verify-receiver")
-    public ResponseEntity<VerifyAccountResponse> verifyrecieverAccount(@Valid  @RequestBody VerifyAccountRequest request) {
+    public ResponseEntity<VerifyAccountResponse> VerifyrecieverAccount(@Valid  @RequestBody VerifyAccountRequest request) {
         return ResponseEntity.ok(bankAccountService.verifyreciveraccount(request));
 
     }
     @PostMapping("/accounts/internals/verify-sender")
-    public ResponseEntity<VerifyAccountResponse> verifysenderAccount(@Valid @RequestBody VerifyAccountRequest request) {
+    public ResponseEntity<VerifyAccountResponse> verifySenderAccount(@Valid @RequestBody VerifyAccountRequest request) {
         return ResponseEntity.ok(bankAccountService.verifysenderaccount(request));
     }
 
