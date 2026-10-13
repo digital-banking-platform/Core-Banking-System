@@ -11,12 +11,14 @@ import com.siddu.dto.transfer.Response.TransactionValidationResponse;
 import com.siddu.transactionservices.Client.AccountClient;
 import com.siddu.transactionservices.Dto.Requests.AccountNumberRequest;
 import com.siddu.transactionservices.Dto.Requests.TransferMoneyRequest;
+import com.siddu.transactionservices.Dto.Response.AccessForbiddenResponse;
 import com.siddu.transactionservices.Dto.Response.AccountTransactionParty;
 import com.siddu.transactionservices.Dto.Response.TransferMoneyResponse;
 import com.siddu.transactionservices.Entity.TransactionEntity;
 import com.siddu.transactionservices.Enums.TransactionStatus;
 import com.siddu.transactionservices.Exceptions.*;
 import com.siddu.transactionservices.Repository.TransactionEntityRepository;
+import com.siddu.transactionservices.Repository.TransactionHistoryRow;
 import com.siddu.transactionservices.Utils.SecurityUtils;
 import feign.FeignException;
 import feign.RetryableException;
@@ -158,24 +160,24 @@ public class TransactionService {
 
 
         if(Ownership.owner().equals(CheckOwnerShip.INVALID_OWNER)){
-            throw new AccessForbiddenException(null);
+            throw new AccessForbiddenException(new AccessForbiddenResponse("you are not authorized to access this account"));
 
         }
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Pageable pageable = PageRequest.of(page, size, Sort.unsorted());
 
-        Page<TransactionEntity> history=transactionEntityRepository.findBysourceAccountNumber(request.accountNumber(),pageable);
+        Page<TransactionHistoryRow> history=transactionEntityRepository.findAccountTransactions(request.accountNumber(),pageable);
 
         return history.map(txn ->
                     new TransferMoneyResponse(
                             txn.getTransactionId(),
                             new AccountTransactionParty(
-                                    txn.getSnapshot().getSourceAccountHolderName(),
-                                    txn.getSourceAccountNumber()
+                                    txn.getDebitedFromAccountHolderName(),
+                                    txn.getDebitedFromAccountNumber()
                             ),
                             new AccountTransactionParty(
-                                    txn.getSnapshot().getDestinationAccountHolderName(),
-                                    txn.getDestinationAccountNumber()
+                                    txn.getCreditedToAccountHolderName(),
+                                    txn.getCreditedToAccountNumber()
                             ),
                             txn.getAmount(),
                             txn.getStatus(),
